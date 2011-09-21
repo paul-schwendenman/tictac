@@ -1,6 +1,17 @@
+# * * * * * * * * * * * *  
+# * Paul Schwendenman   *
+# * 09/20/11            * 
+# * If you have to ask: * 
+# * All Rights Reserved * 
+# * * * * * * * * * * * * 
+
+
+aidata = {}
+# this is a dictionary of numbers that point to a dictionary with choices and success rates
+# ex. aidata = {121000000 : ([2,3],[-3,4]} where 2=>-3
 
 def printGrid(a):
-  a = convertGrid(a)
+  a = convertGridToXO(a)
   print
   print " %c | %c | %c " % (a[0], a[1], a[2])
   print "---+---+---"
@@ -10,39 +21,53 @@ def printGrid(a):
 
 def printHelp():
   print
-  print " 0 | 1 | 3 "
+  print " 1 | 2 | 3 "
   print "---+---+---"
-  print " 3 | 4 | 5 "
+  print " 4 | 5 | 6 "
   print "---+---+---"
-  print " 6 | 7 | 8 "
+  print " 6 | 7 | 9 "
+
+def convertGridToNumber(a):
+  c = 0
+  for b in a:  
+    c = c * 10
+    c = c + b
+  return c
   
-def convertGrid(a):
+def convertGridToXO(a):
   b = []
   c = {0: " ",1: "X", 2: "O"}
   for e in a:
     b.append(c[e])
   return b
+
 def gameOver(a):
   if a[0] == a[1] == a[2] and a[0] != 0:
-    return 1
+    return (a[0], 1)
   elif a[3] == a[4] == a[5] and a[3] != 0:
-    return 2
+    return (a[3], 2)
   elif a[6] == a[7] == a[8] and a[6] != 0:
-    return 3
+    return (a[6], 3)
 
   elif a[0] == a[3] == a[6] and a[0] != 0:
-    return 4
+    return (a[0], 4)
   elif a[1] == a[4] == a[7] and a[1] != 0:
-    return 5
+    return (a[1], 5)
   elif a[2] == a[5] == a[8] and a[2] != 0:
-    return 6
+    return (a[2], 6)
 
   elif a[0] == a[4] == a[8] and a[0] != 0:
-    return 7
+    return (a[0], 7)
   elif a[6] == a[4] == a[2] and a[2] != 0:
-    return 8
+    return (a[6], 8)
+  elif sum(a) >= 13:
+    return (-1, 0)
   else:
-    return 0
+    return (0, 0)
+
+def simplifyGrid(a):
+  # should find matching grids
+  return a
 
 def swapPlayer(n):
   if n == 1:
@@ -62,11 +87,23 @@ def getMove(n, a):
     return getMoveComputer(a)
   else: #n == 2:
     return getMovePlayer(a)
+
 def getMoveComputer(a):
-  b = getEmptySpaces(a)[0]
-  return b
+  b = convertGridToNumber(a)
+  if b in aidata:
+    c, d  = aidata[b]
+    e = zip(c,d)[sorted(c)[0]]
+  else:
+    e = pickOne(getEmptySpaces(a)) 
+  return e
 
   #return getEmptySpaces(a)[0]
+
+
+
+def pickOne(a):
+  # Picks one from list. 
+  return a[0]
 
 def getMovePlayer(a):
   printGrid(a)
@@ -76,22 +113,64 @@ def getMovePlayer(a):
     if b == "h" or b == "H":
       printHelp()
       b = "110"
-    c = int(b)
+    b = int(b) - 1
   return b
 
+def adjustAI(a, b, c):
+  self = 1
+  if a == -1: #draw
+    pass
+  elif a == self: #win
+    if b == 2:
+      c.pop()
+    while len(c) > 2:
+      d, e = c.pop() # AI move
+
+      if d in aidata:
+        f, g = aidata[d]
+      else
+        f = getEmptySpaces(d)
+        g = [0] * len(f)
+      zip(f,g)[e] +=1
+      aidata[d] = (f,g)
+  else: #loss
+    if b == 2:
+      c.pop()
+    while len(c) > 2:
+      d, e = c.pop() # AI move
+
+      if d in aidata:
+        f, g = aidata[d]
+      else
+        f = getEmptySpaces(d)
+        g = [0] * len(f)
+      zip(f,g)[e] -= 1
+      aidata[d] = (f,g)
+      
+      
+
+      # * * * * * * * * * * * 
+      # * Do Something here
+      # * * * * * * * * * * *  
+      c.pop() # Competitor
+        
 
 def play():
   grid = [0,0,0, 0,0,0, 0,0,0,]
   startingplayer = 1
   winner = 0
+  gamegrids = []
 
   printGrid(grid)
   player = startingplayer
   while winner == 0:
-    grid[getMove(player, grid)] = player
+    move = getMove(player, grid)
+    grid[move] = player
     player = swapPlayer(player)    
-    winner = gameOver(grid)
-    
+    winner, row = gameOver(grid)
+    gamegrids.append((convertGridToNumber(grid), move))
+
+  adjustAI(winner, startingplayer, gamegrids)
   printGrid(grid)
 
 play()
