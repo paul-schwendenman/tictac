@@ -7,6 +7,14 @@ def printGrid(a):
   print " %c | %c | %c " % (a[3], a[4], a[5])
   print "---+---+---"
   print " %c | %c | %c " % (a[6], a[7], a[8])
+
+def printHelp():
+  print
+  print " 0 | 1 | 3 "
+  print "---+---+---"
+  print " 3 | 4 | 5 "
+  print "---+---+---"
+  print " 6 | 7 | 8 "
   
 def convertGrid(a):
   b = []
@@ -64,7 +72,11 @@ def getMovePlayer(a):
   printGrid(a)
   b = -1
   while b not in getEmptySpaces(a):
-    b = int(raw_input("Move? ")[0])
+    b = raw_input("Move? ")[0]
+    if b == "h" or b == "H":
+      printHelp()
+      b = "110"
+    c = int(b)
   return b
 
 
