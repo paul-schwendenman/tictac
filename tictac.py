@@ -5,6 +5,7 @@
 # * All Rights Reserved * 
 # * * * * * * * * * * * * 
 
+import pickle
 
 aidata = {}
 # this is a dictionary of numbers that point to a dictionary with choices and success rates
@@ -33,6 +34,12 @@ def convertGridToNumber(a):
     c = c * 10
     c = c + b
   return c
+
+def convertNumberToGrid(a):
+  b = []
+  for c in str(a):
+    b.append(int(c))
+  return b
   
 def convertGridToXO(a):
   b = []
@@ -82,6 +89,13 @@ def getEmptySpaces(a):
       b.append(c)
   return b
 
+def getUsedSpaces(a):
+  b = []
+  for c, d in enumerate(a):
+    if d != 0:
+      b.append(c)
+  return b
+
 def getMove(n, a):
   if n == 1:
     return getMoveComputer(a)
@@ -96,10 +110,7 @@ def getMoveComputer(a):
   else:
     e = pickOne(getEmptySpaces(a)) 
   return e
-
   #return getEmptySpaces(a)[0]
-
-
 
 def pickOne(a):
   # Picks one from list. 
@@ -128,10 +139,10 @@ def adjustAI(a, b, c):
 
       if d in aidata:
         f, g = aidata[d]
-      else
-        f = getEmptySpaces(d)
+      else:
+        f = getUsedSpaces(convertNumberToGrid(d))
         g = [0] * len(f)
-      zip(f,g)[e] +=1
+      dict(zip(f,g))[e] +=1
       aidata[d] = (f,g)
   else: #loss
     if b == 2:
@@ -141,20 +152,24 @@ def adjustAI(a, b, c):
 
       if d in aidata:
         f, g = aidata[d]
-      else
-        f = getEmptySpaces(d)
+      else:
+        f = getUsedSpaces(convertNumberToGrid(d)) 
         g = [0] * len(f)
-      zip(f,g)[e] -= 1
+      dict(zip(f,g))[e] -= 1
       aidata[d] = (f,g)
-      
-      
-
-      # * * * * * * * * * * * 
-      # * Do Something here
-      # * * * * * * * * * * *  
       c.pop() # Competitor
         
-
+def load():
+  a = open("data")
+  c = pickle.load(a)
+  a.close()
+  return c
+  
+def dump(a):
+  b = open("data", "w")
+  pickle.dump(a, b)
+  b.close()
+  
 def play():
   grid = [0,0,0, 0,0,0, 0,0,0,]
   startingplayer = 1
@@ -173,4 +188,6 @@ def play():
   adjustAI(winner, startingplayer, gamegrids)
   printGrid(grid)
 
+aidata = load()
 play()
+dump(aidata)
