@@ -2,7 +2,7 @@
 # * Paul Schwendenman   *
 # * 09/20/11            * 
 # * If you have to ask: * 
-# * All Rights Reserved * 
+# * You aren't allowed  * 
 # * * * * * * * * * * * * 
 
 import pickle
@@ -97,18 +97,32 @@ def getUsedSpaces(a):
   return b
 
 def getMove(n, a):
-  if n == 1:
-    return getMoveComputer(a)
-  else: #n == 2:
-    return getMovePlayer(a)
+  b  = 1000
+  
+  while b not in getEmptySpaces(a):
+    if n == 1:
+      b = getMoveComputer(a)
+      if b not in getEmptySpaces(a):
+        print "\n\t b: ", b, " is not in ", getEmptySpaces(a)
+        raise ValueError
+    else: #n == 2:
+      b = getMovePlayer(a)
+
+  return b
 
 def getMoveComputer(a):
-  b = convertGridToNumber(a)
+  b = simplifyGrid(convertGridToNumber(a))
   if b in aidata:
-    c, d  = aidata[b]
-    e = zip(c,d)[sorted(c)[0]]
+    d, c  = aidata[b]
+    e = d[c.index(max(c))]
+    if e != dict(zip(c,d))[max(c)]:
+      print "Miss match: \n\t e: ", e, "\n\t dict pick: ", dict(zip(c,d))[max(c)]
+      #raise ValueError
+    print "AI\n\t C: ", c, "\n\t D: ", d, "\n\t index: ", c.index(max(c)), "\n\t zipped: ", zip(c,d), "\n\t dict: ", dict(zip(c,d)),
+    print "\n\t sorted: ", sorted(c), "\n\t first: ", max(c), "\n\t move: ", e
   else:
     e = pickOne(getEmptySpaces(a)) 
+    print "AI\n\t empty: ", getEmptySpaces(a), "\n\t move: ", e
   return e
   #return getEmptySpaces(a)[0]
 
@@ -118,13 +132,11 @@ def pickOne(a):
 
 def getMovePlayer(a):
   printGrid(a)
-  b = -1
-  while b not in getEmptySpaces(a):
-    b = raw_input("Move? ")[0]
-    if b == "h" or b == "H":
-      printHelp()
-      b = "110"
-    b = int(b) - 1
+  b = raw_input("Move? ")[0]
+  if b == "h" or b == "H":
+    printHelp()
+    b = "110"
+  b = int(b) - 1
   return b
 
 def adjustAI(a, b, c):
@@ -136,28 +148,44 @@ def adjustAI(a, b, c):
       c.pop()
     while len(c) > 2:
       d, e = c.pop() # AI move
-
+      d = simplifyGrid(d)
       if d in aidata:
         f, g = aidata[d]
       else:
-        f = getUsedSpaces(convertNumberToGrid(d))
+        f = getEmptySpaces(convertNumberToGrid(d))
         g = [0] * len(f)
-      dict(zip(f,g))[e] +=1
+
+      print "f: ", f, "g: ", g
+
+      g[f.index(e)] += 1
+      #dict(zip(f,g))[e] +=1 #Doesn't work!! Tuples aren't mutatable?
       aidata[d] = (f,g)
+      print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f, "\n\t G: ", g, 
+      print "\n\t zipped: ", zip(f, g), "\n\t dict: ", dict(zip(f, g)),
+      print "\n\t index : ", e, "\n\t score: ", dict(zip(f,g))[e], "\n\t aidata: ", aidata[d], "\n\t part 0: ", aidata[d][0], "\n\t part 1: ", aidata[d][1] 
+
   else: #loss
     if b == 2:
       c.pop()
     while len(c) > 2:
       d, e = c.pop() # AI move
-
+      d = simplifyGrid(d)
       if d in aidata:
         f, g = aidata[d]
       else:
         f = getUsedSpaces(convertNumberToGrid(d)) 
         g = [0] * len(f)
-      dict(zip(f,g))[e] -= 1
+
+      print "f: ", f, "g: ", g
+
+      g[f.index(e)] -= 1
+      #dict(zip(f,g))[e] -=1 #Doesn't work!! Tuples aren't mutatable?
       aidata[d] = (f,g)
       c.pop() # Competitor
+      print "AI loss\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f, "\n\t G: ", g, 
+      print "\n\t zipped: ", zip(f, g), "\n\t dict: ", dict(zip(f, g)),
+      print "\n\t index : ", e, "\n\t score: ", dict(zip(f,g))[e], "\n\t aidata: ", aidata[d], "\n\t part 0: ", aidata[d][0], "\n\t part 1: ", aidata[d][1] 
+
         
 def load():
   a = open("data")
@@ -180,14 +208,30 @@ def play():
   player = startingplayer
   while winner == 0:
     move = getMove(player, grid)
+    print "move (190): ", move
     grid[move] = player
     player = swapPlayer(player)    
     winner, row = gameOver(grid)
     gamegrids.append((convertGridToNumber(grid), move))
 
+  if winner == 1:
+    print "You lost, computer won"
+  elif winner == 2:
+    print "You won! computer lost"
+  elif winner == -1:
+    print "You tied!"
+  else:
+    raise IndexError
+  
   adjustAI(winner, startingplayer, gamegrids)
   printGrid(grid)
 
-aidata = load()
-play()
-dump(aidata)
+def main():
+  a = 'y'
+  while a == 'y' or a == 'Y':
+    print "AI data: ", aidata
+    #aidata = load()
+    play()
+    #dump(aidata)
+    a = raw_input("Play again? ")[0]
+main()  
