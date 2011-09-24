@@ -9,7 +9,7 @@ import pickle
 
 aidata = {}
 # this is a dictionary of numbers that point to a dictionary with choices and success rates
-# ex. aidata = {121000000 : ([2,3],[-3,4]} where 2=>-3
+# ex. aidata = {121000000 : [2,3,2, 3,4,4, 1,-3,4]} where [2]=3
 
 def printGrid(a):
   a = convertGridToXO(a)
@@ -96,6 +96,15 @@ def getUsedSpaces(a):
       b.append(c)
   return b
 
+def getInitialValues(a):
+  b = []
+  for c in a:
+    if c != 0:
+      b.append(-2)
+    else:
+      b.append(0)
+  return b
+
 def getMove(n, a):
   b  = 1000
   
@@ -113,17 +122,15 @@ def getMove(n, a):
 def getMoveComputer(a):
   b = simplifyGrid(convertGridToNumber(a))
   if b in aidata:
-    d, c  = aidata[b]
-    e = d[c.index(max(c))]
-    if e != dict(zip(c,d))[max(c)]:
-      print "Miss match: \n\t e: ", e, "\n\t dict pick: ", dict(zip(c,d))[max(c)]
-      #raise ValueError
-    print "AI\n\t C: ", c, "\n\t D: ", d, "\n\t index: ", c.index(max(c)), "\n\t zipped: ", zip(c,d), "\n\t dict: ", dict(zip(c,d)),
-    print "\n\t sorted: ", sorted(c), "\n\t first: ", max(c), "\n\t move: ", e
+    c  = aidata[b]
+    d = c.index(max(c))
+
+    print "AI\n\t C (scores): ", c, "\n\t D (move): ", d, 
+    print "\n\t sorted: ", sorted(c), "\n\t first: ", max(c)
   else:
-    e = pickOne(getEmptySpaces(a)) 
-    print "AI\n\t empty: ", getEmptySpaces(a), "\n\t move: ", e
-  return e
+    d = pickOne(getEmptySpaces(a)) 
+    print "AI\n\t empty: ", getEmptySpaces(a), "\n\t move: ", d
+  return d
   #return getEmptySpaces(a)[0]
 
 def pickOne(a):
@@ -150,19 +157,19 @@ def adjustAI(a, b, c):
       d, e = c.pop() # AI move
       d = simplifyGrid(d)
       if d in aidata:
-        f, g = aidata[d]
+        f = aidata[d]
       else:
-        f = getEmptySpaces(convertNumberToGrid(d))
-        g = [0] * len(f)
+        f = getInitialValues(convertNumberToGrid(d))
+        g = [0] * len(f) 
 
-      print "f: ", f, "g: ", g
+      print "f: ", f
 
-      g[f.index(e)] += 1
-      #dict(zip(f,g))[e] +=1 #Doesn't work!! Tuples aren't mutatable?
-      aidata[d] = (f,g)
-      print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f, "\n\t G: ", g, 
-      print "\n\t zipped: ", zip(f, g), "\n\t dict: ", dict(zip(f, g)),
-      print "\n\t index : ", e, "\n\t score: ", dict(zip(f,g))[e], "\n\t aidata: ", aidata[d], "\n\t part 0: ", aidata[d][0], "\n\t part 1: ", aidata[d][1] 
+      f[e] += 1
+
+      aidata[d] = f
+
+      print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
+      print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
 
   else: #loss
     if b == 2:
@@ -171,20 +178,21 @@ def adjustAI(a, b, c):
       d, e = c.pop() # AI move
       d = simplifyGrid(d)
       if d in aidata:
-        f, g = aidata[d]
+        f = aidata[d]
       else:
-        f = getUsedSpaces(convertNumberToGrid(d)) 
-        g = [0] * len(f)
+        f = getInitialValues(convertNumberToGrid(d)) 
 
-      print "f: ", f, "g: ", g
+      print "f: ", f
 
-      g[f.index(e)] -= 1
-      #dict(zip(f,g))[e] -=1 #Doesn't work!! Tuples aren't mutatable?
-      aidata[d] = (f,g)
+      f[e] -= 1
+
+      aidata[d] = f
+
       c.pop() # Competitor
-      print "AI loss\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f, "\n\t G: ", g, 
-      print "\n\t zipped: ", zip(f, g), "\n\t dict: ", dict(zip(f, g)),
-      print "\n\t index : ", e, "\n\t score: ", dict(zip(f,g))[e], "\n\t aidata: ", aidata[d], "\n\t part 0: ", aidata[d][0], "\n\t part 1: ", aidata[d][1] 
+
+      aidata[d] = f
+      print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
+      print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
 
         
 def load():
