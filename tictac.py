@@ -26,7 +26,7 @@ def printHelp():
   print "---+---+---"
   print " 4 | 5 | 6 "
   print "---+---+---"
-  print " 6 | 7 | 9 "
+  print " 7 | 8 | 9 "
 
 def convertGridToNumber(a):
   c = 0
@@ -119,8 +119,18 @@ def getMove(n, a):
 
   return b
 
+def getMovePlayer(a):
+  printGrid(a)
+  b = raw_input("Move? ")[0]
+  if b == "h" or b == "H":
+    printHelp()
+    b = "110"
+  b = int(b) - 1
+  return b
+
 def getMoveComputer(a):
   b = simplifyGrid(convertGridToNumber(a))
+  print "\n\t a: ", a, "\n\t b: ", b, "\n\t convert: ", convertGridToNumber(a), "\n\t simplify: ", simplifyGrid(convertGridToNumber(a)), "\n\t AI data: ", aidata
   if b in aidata:
     c  = aidata[b]
     d = c.index(max(c))
@@ -137,15 +147,6 @@ def pickOne(a):
   # Picks one from list. 
   return a[0]
 
-def getMovePlayer(a):
-  printGrid(a)
-  b = raw_input("Move? ")[0]
-  if b == "h" or b == "H":
-    printHelp()
-    b = "110"
-  b = int(b) - 1
-  return b
-
 def adjustAI(a, b, c):
   self = 1
   if a == -1: #draw
@@ -154,13 +155,14 @@ def adjustAI(a, b, c):
     if b == 2:
       c.pop()
     while len(c) > 2:
-      d, e = c.pop() # AI move
+      d, e, g = c.pop() # AI move
+      if g == 2:
+        d, e, g = c.pop()
       d = simplifyGrid(d)
       if d in aidata:
         f = aidata[d]
       else:
         f = getInitialValues(convertNumberToGrid(d))
-        g = [0] * len(f) 
 
       print "f: ", f
 
@@ -175,7 +177,10 @@ def adjustAI(a, b, c):
     if b == 2:
       c.pop()
     while len(c) > 2:
-      d, e = c.pop() # AI move
+      d, e, g = c.pop() # AI move
+      if g == 2:
+        d, e, g = c.pop()
+
       d = simplifyGrid(d)
       if d in aidata:
         f = aidata[d]
@@ -187,8 +192,6 @@ def adjustAI(a, b, c):
       f[e] -= 1
 
       aidata[d] = f
-
-      c.pop() # Competitor
 
       aidata[d] = f
       print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
@@ -217,10 +220,10 @@ def play():
   while winner == 0:
     move = getMove(player, grid)
     print "move (190): ", move
+    gamegrids.append((convertGridToNumber(grid), move, player))
     grid[move] = player
     player = swapPlayer(player)    
     winner, row = gameOver(grid)
-    gamegrids.append((convertGridToNumber(grid), move))
 
   if winner == 1:
     print "You lost, computer won"
@@ -238,8 +241,8 @@ def main():
   a = 'y'
   while a == 'y' or a == 'Y':
     print "AI data: ", aidata
-    #aidata = load()
+    aidata = load()
     play()
-    #dump(aidata)
+    dump(aidata)
     a = raw_input("Play again? ")[0]
 main()  
