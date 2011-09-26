@@ -6,13 +6,53 @@
 # * * * * * * * * * * * * 
 
 import pickle
+from UserList import UserList
 
 aidata = {}
 # this is a dictionary of numbers that point to a dictionary with choices and success rates
 # ex. aidata = {121000000 : [2,3,2, 3,4,4, 1,-3,4]} where [2]=3
 
-def printGrid(a):
-  a = convertGridToXO(a)
+class Grid(UserList):
+  def __init__(self, initlist=None):
+    #From the userlist 
+    self.data = []
+    if initlist is not None:
+      if type(initlist) == type(self.data):          
+        self.data[:] = initlist
+      elif isinstance(initlist, UserList):
+        self.data[:] = initlist.data[:] 
+      else:                              
+        self.data = list(initlist)
+    else:                              
+      self.data = [0] * 9
+    print self.data
+      
+  def __str__(self):
+    a=''.join([str(a) for a in self.data])
+    return a
+
+  def toString(self):
+    return ':'.join([str(a) for a in self.data])
+    
+  def fromString(self, a):
+    self.data = [int(b) for b in a.split(':')]
+  
+  def returnXO(self):
+    b = {0: " ",1: "X", 2: "O"}
+    return [b[a] for a in self.data]
+
+  def getEmptySpaces(self):
+    return [a for a, b in enumerate(self.data) if b == 0]
+
+  def getUsedSpaces(self):
+    return [a for a, b in enumerate(self.data) if b != 0]
+
+
+def printGrid(b):
+  #a = convertGridToXO(a)
+  
+  a = b.returnXO()
+  
   print
   print " %c | %c | %c " % (a[0], a[1], a[2])
   print "---+---+---"
@@ -72,9 +112,25 @@ def gameOver(a):
   else:
     return (0, 0)
 
-def simplifyGrid(a):
-  # should find matching grids
-  return a
+def translateMove(a, c):
+  b = [[2,1,0,  5,4,3,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,5,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
+  return  b[c].index(a)
+
+def translateGrid(a, e):
+  b = [[2,1,0,  5,4,3,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,5,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
+  return ":".join([str(a[f]) for f in b[e]])
+
+def findMaxTranslation(a):
+  b = [[2,1,0,  5,4,3,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,5,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
+  c = max([(''.join([a[f] for f in e]), d) for d, e in enumerate(b)])[1]
+  print c
+  return c 
+
+def makePattern(a, b):
+  c = [0] * len(a)
+  for d, e in enumerate(b):
+    c[d] = a[e] 
+  return c  
 
 def swapPlayer(n):
   if n == 1:
@@ -97,22 +153,17 @@ def getUsedSpaces(a):
   return b
 
 def getInitialValues(a):
-  b = []
-  for c in a:
-    if c != 0:
-      b.append(-2)
-    else:
-      b.append(0)
-  return b
+  b = {"0": 0, "1": -2, "2": -2}
+  return [b[c] for c in a.split(":")]
 
 def getMove(n, a):
   b  = 1000
   
-  while b not in getEmptySpaces(a):
+  while b not in a.getEmptySpaces():
     if n == 1:
       b = getMoveComputer(a)
-      if b not in getEmptySpaces(a):
-        print "\n\t b: ", b, " is not in ", getEmptySpaces(a)
+      if b not in a.getEmptySpaces():
+        print "\n\t b: ", b, " is not in ", a.getEmptySpaces()
         raise ValueError
     else: #n == 2:
       b = getMovePlayer(a)
@@ -129,17 +180,18 @@ def getMovePlayer(a):
   return b
 
 def getMoveComputer(a):
-  b = simplifyGrid(convertGridToNumber(a))
-  print "\n\t a: ", a, "\n\t b: ", b, "\n\t convert: ", convertGridToNumber(a), "\n\t simplify: ", simplifyGrid(convertGridToNumber(a)), "\n\t AI data: ", aidata
+  e = findMaxTranslation(a.toString())
+  b = translateGrid(a, e)
+  print "\n\t a: ", a, "\n\t b: ", b, "\n\t convert: ", a.toString(), "\n\t simplify: ", b, "\n\t AI data: ", aidata
   if b in aidata:
     c  = aidata[b]
-    d = c.index(max(c))
-
+    d = translateMove(c.index(max(c)), e)
+    
     print "AI\n\t C (scores): ", c, "\n\t D (move): ", d, 
     print "\n\t sorted: ", sorted(c), "\n\t first: ", max(c)
   else:
-    d = pickOne(getEmptySpaces(a)) 
-    print "AI\n\t empty: ", getEmptySpaces(a), "\n\t move: ", d
+    d = pickOne(a.getEmptySpaces()) 
+    print "AI\n\t empty: ", a.getEmptySpaces(), "\n\t move: ", d
   return d
   #return getEmptySpaces(a)[0]
 
@@ -158,11 +210,14 @@ def adjustAI(a, b, c):
       d, e, g = c.pop() # AI move
       if g == 2:
         d, e, g = c.pop()
-      d = simplifyGrid(d)
-      if d in aidata:
-        f = aidata[d]
+      h = findMaxTranslation(d)
+      i = translateGrid(d, h)
+      if i in aidata:
+        f = aidata[i]
       else:
-        f = getInitialValues(convertNumberToGrid(d))
+        # Fix this:
+        #	Add initial values to Grid?
+        f = getInitialValues(d)
 
       print "f: ", f
 
@@ -181,11 +236,12 @@ def adjustAI(a, b, c):
       if g == 2:
         d, e, g = c.pop()
 
-      d = simplifyGrid(d)
-      if d in aidata:
-        f = aidata[d]
+      h = findMaxTranslation(d)
+      i = translateGrid(d, h)
+      if i in aidata:
+        f = aidata[i]
       else:
-        f = getInitialValues(convertNumberToGrid(d)) 
+        f = getInitialValues(d)
 
       print "f: ", f
 
@@ -194,7 +250,7 @@ def adjustAI(a, b, c):
       aidata[d] = f
 
       aidata[d] = f
-      print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
+      print "AI loss\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
       print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
 
         
@@ -210,7 +266,7 @@ def dump(a):
   b.close()
   
 def play():
-  grid = [0,0,0, 0,0,0, 0,0,0,]
+  grid = Grid()
   startingplayer = 1
   winner = 0
   gamegrids = []
@@ -220,7 +276,7 @@ def play():
   while winner == 0:
     move = getMove(player, grid)
     print "move (190): ", move
-    gamegrids.append((convertGridToNumber(grid), move, player))
+    gamegrids.append((grid.toString(), move, player))
     grid[move] = player
     player = swapPlayer(player)    
     winner, row = gameOver(grid)
@@ -239,10 +295,15 @@ def play():
 
 def main():
   a = 'y'
+  
+  #b = raw_input("Enter name to load previous memory or \"new\" to start a new account: ")
+  
   while a == 'y' or a == 'Y':
-    print "AI data: ", aidata
+#    print "AI data: ", aidata
     aidata = load()
     play()
     dump(aidata)
     a = raw_input("Play again? ")[0]
-main()  
+
+if __name__ == "__main__":
+  main()  
