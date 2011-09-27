@@ -25,7 +25,7 @@ class Grid(UserList):
         self.data = list(initlist)
     else:                              
       self.data = [0] * 9
-    print self.data
+    print self
       
   def __str__(self):
     a=''.join([str(a) for a in self.data])
@@ -48,11 +48,11 @@ class Grid(UserList):
     return [a for a, b in enumerate(self.data) if b != 0]
 
 
-def printGrid(b):
-  #a = convertGridToXO(a)
+def printXO(b):
+  printGrid(b.returnXO())
   
-  a = b.returnXO()
   
+def printGrid(a):
   print
   print " %c | %c | %c " % (a[0], a[1], a[2])
   print "---+---+---"
@@ -112,19 +112,43 @@ def gameOver(a):
   else:
     return (0, 0)
 
+def join(a):
+  return ":".join(a)
+
+def split(a):
+  if type(a) == type(""):
+    return a.split(":")
+  elif type(a) == Grid:
+    return a
+  elif type(a) == type([]):
+    return a
+  else:
+    print type(a)
+    raise TypeError
+
 def translateMove(a, c):
-  b = [[2,1,0,  5,4,3,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,5,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
+  b = [[0,1,2,  3,4,5,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
+  if type(a) == type(""):
+    a = int(a)
   return  b[c].index(a)
 
 def translateGrid(a, e):
-  b = [[2,1,0,  5,4,3,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,5,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
-  return ":".join([str(a[f]) for f in b[e]])
+  return translateArray(a)[e]
+#  b = [[0,1,2,  3,4,5,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
+#  return ":".join([str(a[f]) for f in b[e]])
+
+def translateArray(a):
+  a = split(a)
+  b = [[0,1,2,  3,4,5,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
+  return [":".join([str(a[f]) for f in e]) for e in b]
+
 
 def findMaxTranslation(a):
-  b = [[2,1,0,  5,4,3,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,5,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
-  c = max([(''.join([a[f] for f in e]), d) for d, e in enumerate(b)])[1]
-  print c
-  return c 
+  a = split(a)
+  b = [[0,1,2,  3,4,5,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
+  c = [(Grid([a[f] for f in e]), d) for d, e in enumerate(b)]
+  print "find max\n\t c: ", c, "\n\t max: ", max(c)
+  return max(c)[1] 
 
 def makePattern(a, b):
   c = [0] * len(a)
@@ -182,7 +206,7 @@ def getMovePlayer(a):
 def getMoveComputer(a):
   e = findMaxTranslation(a.toString())
   b = translateGrid(a, e)
-  print "\n\t a: ", a, "\n\t b: ", b, "\n\t convert: ", a.toString(), "\n\t simplify: ", b, "\n\t AI data: ", aidata
+  print "\n\t a: ", a, "\n\t b: ", b, "\n\t e: ", e, "\n\t translate array: ", translateArray(a), "\n\t convert: ", a.toString(), "\n\t simplify: ", b, "\n\t AI data: ", aidata
   if b in aidata:
     c  = aidata[b]
     d = translateMove(c.index(max(c)), e)
@@ -255,9 +279,12 @@ def adjustAI(a, b, c):
 
         
 def load():
-  a = open("data")
-  c = pickle.load(a)
-  a.close()
+  try:
+    a = open("data")
+    c = pickle.load(a)
+    a.close()
+  except IOError:
+    c = {}
   return c
   
 def dump(a):
