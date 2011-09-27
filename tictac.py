@@ -5,13 +5,23 @@
 # * You aren't allowed  * 
 # * * * * * * * * * * * * 
 
+# * * * * * * *
+# * Imported  * 
+# * * * * * * *
 import pickle
 from UserList import UserList
 
+# * * * * * * * * * * *
+# * Global Variables  * 
+# * * * * * * * * * * *
 aidata = {}
-# this is a dictionary of numbers that point to a dictionary with choices and success rates
-# ex. aidata = {121000000 : [2,3,2, 3,4,4, 1,-3,4]} where [2]=3
+  # this is a dictionary of numbers that point to a dictionary with choices and success rates
+  # ex. aidata = {121000000 : [2,3,2, 3,4,4, 1,-3,4]} where [2]=3
+DEBUG = 0
 
+# * * * * * * * *
+# * Grid Class  * 
+# * * * * * * * *
 class Grid(UserList):
   def __init__(self, initlist=None):
     #From the userlist 
@@ -25,7 +35,8 @@ class Grid(UserList):
         self.data = list(initlist)
     else:                              
       self.data = [0] * 9
-    print self
+    if DEBUG:
+      print self
       
   def __str__(self):
     a=''.join([str(a) for a in self.data])
@@ -48,6 +59,9 @@ class Grid(UserList):
     return [a for a, b in enumerate(self.data) if b != 0]
 
 
+# * * * * * * * * * * * * * *
+# * Grid Display Functions  * 
+# * * * * * * * * * * * * * *
 def printXO(b):
   printGrid(b.returnXO())
   
@@ -68,6 +82,9 @@ def printHelp():
   print "---+---+---"
   print " 7 | 8 | 9 "
 
+# * * * * * * * * * * * * * * * *
+# * Mostly Depricated Functions * <-- Remove? 
+# * * * * * * * * * * * * * * * * 
 def convertGridToNumber(a):
   c = 0
   for b in a:  
@@ -88,6 +105,28 @@ def convertGridToXO(a):
     b.append(c[e])
   return b
 
+def getEmptySpaces(a):
+  b = []
+  for c, d in enumerate(a):
+    if d == 0:
+      b.append(c)
+  return b
+
+def getUsedSpaces(a):
+  b = []
+  for c, d in enumerate(a):
+    if d != 0:
+      b.append(c)
+  return b
+
+def getInitialValues(a):
+  b = {"0": 0, "1": -2, "2": -2}
+  return [b[c] for c in a.split(":")]
+
+
+# * * * * * * * * * * * * 
+# * Game Over Function  * <-- Add to Grid? 
+# * * * * * * * * * * * *
 def gameOver(a):
   if a[0] == a[1] == a[2] and a[0] != 0:
     return (a[0], 1)
@@ -112,6 +151,10 @@ def gameOver(a):
   else:
     return (0, 0)
 
+# * * * * * * * * * * * *
+# * Translation Helpers *
+# * * * * * * * * * * * *
+
 def join(a):
   return ":".join(a)
 
@@ -126,6 +169,9 @@ def split(a):
     print type(a)
     raise TypeError
 
+# * * * * * * * * * * * * *  
+# * Translation Functions * 
+# * * * * * * * * * * * * * 
 def translateMove(a, c):
   b = [[0,1,2,  3,4,5,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
   if type(a) == type(""):
@@ -147,38 +193,22 @@ def findMaxTranslation(a):
   a = split(a)
   b = [[0,1,2,  3,4,5,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
   c = [(Grid([a[f] for f in e]), d) for d, e in enumerate(b)]
-  print "find max\n\t c: ", c, "\n\t max: ", max(c)
+  if DEBUG:
+    print "find max\n\t c: ", c, "\n\t max: ", max(c)
   return max(c)[1] 
 
-def makePattern(a, b):
-  c = [0] * len(a)
-  for d, e in enumerate(b):
-    c[d] = a[e] 
-  return c  
+
+
+
+# * * * * * * * * * * * * * * *
+# * Player Movement Functions *
+# * * * * * * * * * * * * * * *
 
 def swapPlayer(n):
   if n == 1:
     return 2
   else: # n == 2:
     return 1
-
-def getEmptySpaces(a):
-  b = []
-  for c, d in enumerate(a):
-    if d == 0:
-      b.append(c)
-  return b
-
-def getUsedSpaces(a):
-  b = []
-  for c, d in enumerate(a):
-    if d != 0:
-      b.append(c)
-  return b
-
-def getInitialValues(a):
-  b = {"0": 0, "1": -2, "2": -2}
-  return [b[c] for c in a.split(":")]
 
 def getMove(n, a):
   b  = 1000
@@ -195,7 +225,7 @@ def getMove(n, a):
   return b
 
 def getMovePlayer(a):
-  printGrid(a)
+  printXO(a)
   b = raw_input("Move? ")[0]
   if b == "h" or b == "H":
     printHelp()
@@ -204,18 +234,22 @@ def getMovePlayer(a):
   return b
 
 def getMoveComputer(a):
+  # global aidata
   e = findMaxTranslation(a.toString())
   b = translateGrid(a, e)
-  print "\n\t a: ", a, "\n\t b: ", b, "\n\t e: ", e, "\n\t translate array: ", translateArray(a), "\n\t convert: ", a.toString(), "\n\t simplify: ", b, "\n\t AI data: ", aidata
+  if DEBUG:
+    print "\n\t a: ", a, "\n\t b: ", b, "\n\t e: ", e, "\n\t translate array: ", translateArray(a), "\n\t convert: ", a.toString(), "\n\t simplify: ", b, "\n\t AI data: ", aidata
   if b in aidata:
     c  = aidata[b]
     d = translateMove(c.index(max(c)), e)
     
-    print "AI\n\t C (scores): ", c, "\n\t D (move): ", d, 
-    print "\n\t sorted: ", sorted(c), "\n\t first: ", max(c)
+    if DEBUG:
+      print "AI\n\t C (scores): ", c, "\n\t D (move): ", d, 
+      print "\n\t sorted: ", sorted(c), "\n\t first: ", max(c)
   else:
     d = pickOne(a.getEmptySpaces()) 
-    print "AI\n\t empty: ", a.getEmptySpaces(), "\n\t move: ", d
+    if DEBUG:
+      print "AI\n\t empty: ", a.getEmptySpaces(), "\n\t move: ", d
   return d
   #return getEmptySpaces(a)[0]
 
@@ -223,7 +257,32 @@ def pickOne(a):
   # Picks one from list. 
   return a[0]
 
+
+# * * * * * * * * * * * * * * * * *
+# * Player Finalization Handlers  *
+# * * * * * * * * * * * * * * * * *
+def handleGameOver(a, b, c):
+  handleGameOverPlayer(a)
+  handleGameOverComputer(a, b, c)
+
+def handleGameOverPlayer(a):
+  if a == 1:
+    print "You lost, computer won"
+  elif a == 2:
+    print "You won! computer lost"
+  elif a == -1:
+    print "You tied!"
+  else:
+    "Winner not -1, 1, or 2\n\tWinner: ", winner
+    raise IndexError
+
+def handleGameOverComputer(a, b, c):
+  adjustAI(a,b,c)
+
+
+
 def adjustAI(a, b, c):
+  global aidata
   self = 1
   if a == -1: #draw
     pass
@@ -243,14 +302,16 @@ def adjustAI(a, b, c):
         #	Add initial values to Grid?
         f = getInitialValues(d)
 
-      print "f: ", f
+      if DEBUG:
+        print "f: ", f
 
       f[e] += 1
 
       aidata[d] = f
 
-      print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
-      print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
+      if DEBUG:
+        print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
+        print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
 
   else: #loss
     if b == 2:
@@ -267,23 +328,70 @@ def adjustAI(a, b, c):
       else:
         f = getInitialValues(d)
 
-      print "f: ", f
+      if DEBUG:
+        print "f: ", f
 
       f[e] -= 1
 
       aidata[d] = f
 
       aidata[d] = f
-      print "AI loss\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
-      print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
+      if DEBUG:
+        print "AI loss\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
+        print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
 
-        
+
+# * * * * * * * * * * * * * 
+# * Statistical Functions * 
+# * * * * * * * * * * * * * 
+
+def pushStats(b, a):
+  b.reverse()
+  b.append(a)
+  b.reverse()
+  if len(b) > 15:
+    b.pop()
+  return b
+
+def printStats(a):
+  b = a[0]
+  c = a[1]
+  d = a[2]
+  e = a[3]
+  f = b + c + d
+  print "Success for X\n\twins: ",
+  print b, (b * 100.) / f, "%\n\tloses: ", c, (c * 100.) / f, "%\n\tties: ", d, (d * 100.) / f, "%"
+  b = e.count(1)
+  c = e.count(2)
+  d = e.count(-1)
+  f = b + c + d
+  print "Last 15 games:\n\twins: ", 
+  print b, (b * 100.) / f, "%\n\tloses: ", c, (c * 100.) / f, "%\n\tties: ", d, (d * 100.) / f, "%"
+
+def analyzeStats(a, b):
+  if a == 1:
+    b[0] += 1
+  elif a == 2:
+    b[1] += 1
+  elif a == -1:
+    b[2] += 1
+  else:
+    "Winner not -1, 1, or 2\n\tWinner: ", winner
+    raise IndexError
+    
+  b[3] = pushStats(b[3], a)
+  
+  
+# * * * * * * * * * * * * * *
+# * File Control Functions  *
+# * * * * * * * * * * * * * *
 def load():
   try:
     a = open("data")
     c = pickle.load(a)
     a.close()
   except IOError:
+    print "IO Error, line 287"
     c = {}
   return c
   
@@ -291,6 +399,10 @@ def dump(a):
   b = open("data", "w")
   pickle.dump(a, b)
   b.close()
+
+# * * * * *
+# * Main  *
+# * * * * *
   
 def play():
   grid = Grid()
@@ -298,36 +410,36 @@ def play():
   winner = 0
   gamegrids = []
 
-  printGrid(grid)
+  printXO(grid)
   player = startingplayer
   while winner == 0:
     move = getMove(player, grid)
-    print "move (190): ", move
+    if DEBUG:
+      print "move (190): ", move
     gamegrids.append((grid.toString(), move, player))
     grid[move] = player
     player = swapPlayer(player)    
     winner, row = gameOver(grid)
 
-  if winner == 1:
-    print "You lost, computer won"
-  elif winner == 2:
-    print "You won! computer lost"
-  elif winner == -1:
-    print "You tied!"
-  else:
-    raise IndexError
   
-  adjustAI(winner, startingplayer, gamegrids)
-  printGrid(grid)
+  handleGameOver(winner, startingplayer, gamegrids)
+  printXO(grid)
 
 def main():
   a = 'y'
   
+  global aidata
   #b = raw_input("Enter name to load previous memory or \"new\" to start a new account: ")
   
   while a == 'y' or a == 'Y':
-#    print "AI data: ", aidata
+    if DEBUG:
+      try:
+        print "AI data: ", aidata
+      except:
+        print "locals: ", locals()
     aidata = load()
+    if DEBUG:
+      print "AI data: ", aidata
     play()
     dump(aidata)
     a = raw_input("Play again? ")[0]
