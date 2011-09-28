@@ -35,19 +35,20 @@ def testTranslateMove():
   for c in range(0,8):
     d = split(translateGrid(a, c))
 
+    printGrid([str(b) for b in a])
+    printGrid(d)
+
     for e in range(0,9):
       f = d[e]
-      #printGrid([str(b) for b in a])
-      #printGrid(d)
 
       #print "\n\t a (list): \t", a, "\n\t c (trans): \t", c, "\n\t d (new grid): \t", d, "\n\t e (move): \t", e, "\n\t f (new move): \t", f, "\n\t g (old move): \t", g
       g = translateMove(f, c)
       #print "\n\t a (list): \t", a, "\n\t c (trans): \t", c, "\n\t d (new grid): \t", d, "\n\t e (move): \t", e, "\n\t f (new move): \t", f, "\n\t g (old move): \t", g
+      print "\n\t e (move): \t", e, "\n\t f (new move): \t", f, "\n\t g (old move): \t", g
       if e == g:
         print "\tPass"
       else:
         print "\tFail"
-
 
 print "Test Load, Dump"
 
@@ -75,4 +76,11 @@ def testLoadandDump():
   else:
     print "\tFail"
 
-testLoad()
+#testTranslateArray()
+#testTranslateGrid()
+#testTranslateMove2()
+#testTranslateMove()
+#testLoad()
+#testDump()
+#testLoadandDump()
+

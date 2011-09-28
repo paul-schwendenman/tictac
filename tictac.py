@@ -20,7 +20,12 @@ aidata = {}
 statdata = [0,0,0, []]
 
 
-DEBUG = 0
+DEBUG = 1 		#Choose: 0 or 1
+DEBUGCOMPUTERMOVE = 0
+STARTINGPLAYER = 2 	#Choose: 1 or 2
+NUMBERLASTGAMES = 15	#Choose: 1, 2, 3...
+FILENAME = "data"	#Save file
+AIADJUST = {'win': 1, 'lose': -1, 'draw': 0, 'last': 2}
 
 # * * * * * * * *
 # * Grid Class  * 
@@ -240,18 +245,18 @@ def getMoveComputer(a):
   # global aidata
   e = findMaxTranslation(a.toString())
   b = translateGrid(a, e)
-  if DEBUG:
+  if DEBUGCOMPUTERMOVE or DEBUG:
     print "\n\t a: ", a, "\n\t b: ", b, "\n\t e: ", e, "\n\t translate array: ", translateArray(a), "\n\t convert: ", a.toString(), "\n\t simplify: ", b, "\n\t AI data: ", aidata
   if b in aidata:
     c  = aidata[b]
     d = translateMove(c.index(max(c)), e)
     
-    if DEBUG:
+    if DEBUGCOMPUTERMOVE or DEBUG:
       print "AI\n\t C (scores): ", c, "\n\t D (move): ", d, 
       print "\n\t sorted: ", sorted(c), "\n\t first: ", max(c)
   else:
     d = pickOne(a.getEmptySpaces()) 
-    if DEBUG:
+    if DEBUGCOMPUTERMOVE or DEBUG:
       print "AI\n\t empty: ", a.getEmptySpaces(), "\n\t move: ", d
   return d
   #return getEmptySpaces(a)[0]
@@ -288,21 +293,21 @@ def handleGameOverComputer(a, b, c, d):
 
 def adjustAI(a, b, c, j):
   global aidata
-  l = {'win': 1, 'lose': -1, 'draw': 0}
   
   self = j
+
   if a == -1: #draw
-    k = l['draw']
+    k = AIADJUST['draw']
   elif a == self: #win
-    k = l['win']
+    k = AIADJUST['win']
   else: #loss
-    k = l['lose']
+    k = AIADJUST['lose']
     
   if b != j:
     if DEBUG:
       print "encountered b = ", b, " should be ", j
     c.pop()
-  while len(c) > 2:
+  while len(c) >= 2:
     d, e, g = c.pop() # AI move
     if g != j:
       d, e, g = c.pop()
@@ -318,13 +323,20 @@ def adjustAI(a, b, c, j):
     if DEBUG:
       print "f: ", f
 
-    f[e] += k
+    if len(c) > 2:
+      l = AIADJUST['last']
+      if DEBUG:
+        print "Last Move?"
+    else:
+      l = 1
+      
+    f[e] += k * l
 
     aidata[d] = f
 
     if DEBUG:
       print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
-      print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
+      print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t change: ", l * k, "\n\t aidata: ", aidata[d]
 
 
 # * * * * * * * * * * * * * 
@@ -335,7 +347,7 @@ def pushStats(b, a):
   b.reverse()
   b.append(a)
   b.reverse()
-  if len(b) > 15:
+  if len(b) > NUMBERLASTGAMES:
     b.pop()
   return b
 
@@ -345,14 +357,15 @@ def printStats(a):
   d = a[2]
   e = a[3]
   f = b + c + d
-  print "Success for X\n\twins: ",
-  print b, (b * 100.) / f, "%\n\tloses: ", c, (c * 100.) / f, "%\n\tties: ", d, (d * 100.) / f, "%"
-  b = e.count(1)
-  c = e.count(2)
-  d = e.count(-1)
-  f = b + c + d
-  print "Last 15 games:\n\twins: ", 
-  print b, (b * 100.) / f, "%\n\tloses: ", c, (c * 100.) / f, "%\n\tties: ", d, (d * 100.) / f, "%"
+  if f > 0:
+    print "Success for O",
+    print "\n\twins: ", c, (c * 100.) / f, "%\n\tloses: ", b, (b * 100.) / f, "%\n\tties: ", d, (d * 100.) / f, "%"
+    b = e.count(1)
+    c = e.count(2)
+    d = e.count(-1)
+    f = b + c + d
+    print "Last %i games:" % (NUMBERLASTGAMES),
+    print "\n\twins: ", c, (c * 100.) / f, "%\n\tloses: ", b, (b * 100.) / f, "%\n\tties: ", d, (d * 100.) / f, "%"
 
 def analyzeStats(a, b):
   if a == 1:
@@ -373,17 +386,22 @@ def analyzeStats(a, b):
 # * * * * * * * * * * * * * *
 def load():
   try:
-    a = open("data")
+    a = open(FILENAME)
     c = pickle.load(a)
     a.close()
   except IOError:
-    print "IO Error, line 287"
+    if DEBUG:
+      print "File doesn't exist? IO Error, line 287"
     c = {}
+  if DEBUG:
+    print "aidata has %i items" % (len(c))
   return c
   
 def dump(a):
-  b = open("data", "w")
+  b = open(FILENAME, "w")
   pickle.dump(a, b)
+  if DEBUG:
+    print "aidata has %i items" % (len(a))
   b.close()
 
 # * * * * *
@@ -392,7 +410,7 @@ def dump(a):
   
 def play():
   grid = Grid()
-  startingplayer = 2
+  startingplayer = STARTINGPLAYER
   winner = 0
   gamegrids = []
   global statdata
@@ -409,8 +427,14 @@ def play():
   analyzeStats(winner, statdata)
 
   printXO(grid)
+
+  if DEBUG:
+    print "Game grids: ", len(gamegrids), gamegrids
+  
   for index in range(1,3):
-    handleGameOver(winner, startingplayer, gamegrids, index)
+    handleGameOver(winner, startingplayer, gamegrids[:], index)
+    if DEBUG:
+      print "\n\tLength after: ", len(gamegrids)
 
 def main():
   #a = 'y'
@@ -420,18 +444,20 @@ def main():
   #b = raw_input("Enter name to load previous memory or \"new\" to start a new account: ")
   try:  
     while 1: #a == 'y' or a == 'Y':
+      aidata = load()
       if DEBUG:
         try:
           print "AI data: ", aidata
         except:
           print "locals: ", locals()
-      aidata = load()
       play()
       dump(aidata)
       #a = raw_input("Play again? ")[0]
   except (ValueError, IndexError, EOFError):
     if DEBUG:
-      print "Caught Error "
+      print "Caught Error: User quit?"
+      import sys
+      print sys.exc_info()[0]
   printStats(statdata)
   dump(aidata)
 
