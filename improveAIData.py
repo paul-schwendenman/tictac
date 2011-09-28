@@ -15,6 +15,10 @@ def getMove(n, a):
       print "\n\t b: ", b, " is not in ", a.getEmptySpaces()
       raise ValueError
   return b
+
+def handleGameOver(a, b, c, d):
+  handleGameOverComputer(a, b, c, d)
+
 # * * * * * 
 # * Main  * 
 # * * * * * 
@@ -44,8 +48,8 @@ if __name__ == '__main__':
     
     analyzeStats(winner, b)
 
-        
-    adjustAI(winner, startingplayer, gamegrids)
+    for index in range(1,3):
+      handleGameOver(winner, startingplayer, gamegrids, index)
   
   printStats(b)
   

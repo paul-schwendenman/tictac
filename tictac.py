@@ -17,6 +17,9 @@ from UserList import UserList
 aidata = {}
   # this is a dictionary of numbers that point to a dictionary with choices and success rates
   # ex. aidata = {121000000 : [2,3,2, 3,4,4, 1,-3,4]} where [2]=3
+statdata = [0,0,0, []]
+
+
 DEBUG = 0
 
 # * * * * * * * *
@@ -261,84 +264,67 @@ def pickOne(a):
 # * * * * * * * * * * * * * * * * *
 # * Player Finalization Handlers  *
 # * * * * * * * * * * * * * * * * *
-def handleGameOver(a, b, c):
-  handleGameOverPlayer(a)
-  handleGameOverComputer(a, b, c)
+def handleGameOver(a, b, c, d):
+  if d == 2:
+    handleGameOverPlayer(a, d)
+  elif d == 1:
+    handleGameOverComputer(a, b, c, d)
+  else:
+    print "Player not 1 or 2", d
 
-def handleGameOverPlayer(a):
-  if a == 1:
-    print "You lost, computer won"
-  elif a == 2:
+def handleGameOverPlayer(a, b):
+  if a == b:
     print "You won! computer lost"
   elif a == -1:
     print "You tied!"
+  elif a == [2, 1][b - 1]:
+    print "You lost, computer won"
   else:
-    "Winner not -1, 1, or 2\n\tWinner: ", winner
+    print "Winner not -1, 1, or 2\n\tWinner: ", winner
     raise IndexError
 
-def handleGameOverComputer(a, b, c):
-  adjustAI(a,b,c)
+def handleGameOverComputer(a, b, c, d):
+  adjustAI(a,b,c,d)
 
-
-
-def adjustAI(a, b, c):
+def adjustAI(a, b, c, j):
   global aidata
-  self = 1
+  l = {'win': 1, 'lose': -1, 'draw': 0}
+  
+  self = j
   if a == -1: #draw
-    pass
+    k = l['draw']
   elif a == self: #win
-    if b == 2:
-      c.pop()
-    while len(c) > 2:
-      d, e, g = c.pop() # AI move
-      if g == 2:
-        d, e, g = c.pop()
-      h = findMaxTranslation(d)
-      i = translateGrid(d, h)
-      if i in aidata:
-        f = aidata[i]
-      else:
-        # Fix this:
-        #	Add initial values to Grid?
-        f = getInitialValues(d)
-
-      if DEBUG:
-        print "f: ", f
-
-      f[e] += 1
-
-      aidata[d] = f
-
-      if DEBUG:
-        print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
-        print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
-
+    k = l['win']
   else: #loss
-    if b == 2:
-      c.pop()
-    while len(c) > 2:
-      d, e, g = c.pop() # AI move
-      if g == 2:
-        d, e, g = c.pop()
+    k = l['lose']
+    
+  if b != j:
+    if DEBUG:
+      print "encountered b = ", b, " should be ", j
+    c.pop()
+  while len(c) > 2:
+    d, e, g = c.pop() # AI move
+    if g != j:
+      d, e, g = c.pop()
+    h = findMaxTranslation(d)
+    i = translateGrid(d, h)
+    if i in aidata:
+      f = aidata[i]
+    else:
+      # Fix this:
+      #	Add initial values to Grid?
+      f = getInitialValues(d)
 
-      h = findMaxTranslation(d)
-      i = translateGrid(d, h)
-      if i in aidata:
-        f = aidata[i]
-      else:
-        f = getInitialValues(d)
+    if DEBUG:
+      print "f: ", f
 
-      if DEBUG:
-        print "f: ", f
+    f[e] += k
 
-      f[e] -= 1
+    aidata[d] = f
 
-      aidata[d] = f
-
-      aidata[d] = f
-      if DEBUG:
-        print "AI loss\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
-        print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
+    if DEBUG:
+      print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
+      print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t aidata: ", aidata[d]
 
 
 # * * * * * * * * * * * * * 
@@ -406,11 +392,11 @@ def dump(a):
   
 def play():
   grid = Grid()
-  startingplayer = 1
+  startingplayer = 2
   winner = 0
   gamegrids = []
+  global statdata
 
-  printXO(grid)
   player = startingplayer
   while winner == 0:
     move = getMove(player, grid)
@@ -420,29 +406,36 @@ def play():
     grid[move] = player
     player = swapPlayer(player)    
     winner, row = gameOver(grid)
+  analyzeStats(winner, statdata)
 
-  
-  handleGameOver(winner, startingplayer, gamegrids)
   printXO(grid)
+  for index in range(1,3):
+    handleGameOver(winner, startingplayer, gamegrids, index)
 
 def main():
-  a = 'y'
+  #a = 'y'
   
   global aidata
+  global statdata
   #b = raw_input("Enter name to load previous memory or \"new\" to start a new account: ")
-  
-  while a == 'y' or a == 'Y':
+  try:  
+    while 1: #a == 'y' or a == 'Y':
+      if DEBUG:
+        try:
+          print "AI data: ", aidata
+        except:
+          print "locals: ", locals()
+      aidata = load()
+      play()
+      dump(aidata)
+      #a = raw_input("Play again? ")[0]
+  except (ValueError, IndexError, EOFError):
     if DEBUG:
-      try:
-        print "AI data: ", aidata
-      except:
-        print "locals: ", locals()
-    aidata = load()
-    if DEBUG:
-      print "AI data: ", aidata
-    play()
-    dump(aidata)
-    a = raw_input("Play again? ")[0]
+      print "Caught Error "
+  printStats(statdata)
+  dump(aidata)
 
 if __name__ == "__main__":
   main()  
+
+  
