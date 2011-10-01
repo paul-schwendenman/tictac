@@ -20,9 +20,8 @@ aidata = {}
 statdata = [0,0,0, []]
 
 
-DEBUG = 1 		#Choose: 0 or 1
-DEBUGCOMPUTERMOVE = 0
-STARTINGPLAYER = 2 	#Choose: 1 or 2
+DEBUG = 0 		#Choose: 0 or 1
+STARTINGPLAYER = 1 	#Choose: 1 or 2
 NUMBERLASTGAMES = 15	#Choose: 1, 2, 3...
 FILENAME = "data"	#Save file
 AIADJUST = {'win': 1, 'lose': -1, 'draw': 0, 'last': 2}
@@ -66,6 +65,10 @@ class Grid(UserList):
   def getUsedSpaces(self):
     return [a for a, b in enumerate(self.data) if b != 0]
 
+  def __hash__(self):
+    # Okay to hash despite being mutable, hash reveals state not variable
+    #return int(self.__str__())
+    return translateHash(self)
 
 # * * * * * * * * * * * * * *
 # * Grid Display Functions  * 
@@ -170,12 +173,15 @@ def split(a):
   if type(a) == type(""):
     return a.split(":")
   elif type(a) == Grid:
+    if DEBUG:
+      raise TypeError("Passed Spilt type Grid")
     return a
   elif type(a) == type([]):
+    if DEBUG:
+      raise TypeError("Passed Spilt type []")
     return a
   else:
-    print type(a)
-    raise TypeError
+    raise TypeError("Passed type %s" % type(a))
 
 # * * * * * * * * * * * * *  
 # * Translation Functions * 
@@ -194,10 +200,13 @@ def translateGrid(a, e):
 def translateArray(a):
   a = split(a)
   b = [[0,1,2,  3,4,5,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
-  return [":".join([str(a[f]) for f in e]) for e in b]
+  return [Grid([str(a[f]) for f in e]) for e in b]
 
+def translateHash(a):
+  b = translateFindMax(a)
+  return int(str(translateGrid(a,b)))
 
-def findMaxTranslation(a):
+def translateFindMax(a):
   a = split(a)
   b = [[0,1,2,  3,4,5,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
   c = [(Grid([a[f] for f in e]), d) for d, e in enumerate(b)]
@@ -205,6 +214,14 @@ def findMaxTranslation(a):
     print "find max\n\t c: ", c, "\n\t max: ", max(c)
   return max(c)[1] 
 
+def translateFindIndex(a, b):
+  c = translateArray(a)
+  if isinstance(b, Grid):
+    pass
+  else:
+    e = [f for f in c if hash(f) == b][0]
+  d = c.index(b)
+  return d
 
 
 
@@ -245,18 +262,19 @@ def getMoveComputer(a):
   # global aidata
   e = findMaxTranslation(a.toString())
   b = translateGrid(a, e)
-  if DEBUGCOMPUTERMOVE or DEBUG:
-    print "\n\t a: ", a, "\n\t b: ", b, "\n\t e: ", e, "\n\t translate array: ", translateArray(a), "\n\t convert: ", a.toString(), "\n\t simplify: ", b, "\n\t AI data: ", aidata
+  if DEBUG:
+    #print "\n\t a: ", a, "\n\t b: ", b, "\n\t e: ", e, "\n\t translate array: ", translateArray(a), "\n\t convert: ", a.toString(), "\n\t simplify: ", b, "\n\t AI data: ", aidata
+    print "\n\t a: ", a, "\n\t b: ", b, "\n\t e: ", e, "\n\t simplify: ", b, "\n\t AI data: ", aidata
   if b in aidata:
     c  = aidata[b]
     d = translateMove(c.index(max(c)), e)
     
-    if DEBUGCOMPUTERMOVE or DEBUG:
+    if DEBUG:
       print "AI\n\t C (scores): ", c, "\n\t D (move): ", d, 
       print "\n\t sorted: ", sorted(c), "\n\t first: ", max(c)
   else:
     d = pickOne(a.getEmptySpaces()) 
-    if DEBUGCOMPUTERMOVE or DEBUG:
+    if DEBUG:
       print "AI\n\t empty: ", a.getEmptySpaces(), "\n\t move: ", d
   return d
   #return getEmptySpaces(a)[0]
