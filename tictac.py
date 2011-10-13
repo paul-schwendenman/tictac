@@ -20,7 +20,7 @@ aidata = {}
 statdata = [0,0,0, []]
 
 
-DEBUG = 0 		#Choose: 0 or 1
+DEBUG = 1 		#Choose: 0 or 1
 STARTINGPLAYER = 1 	#Choose: 1 or 2
 NUMBERLASTGAMES = 15	#Choose: 1, 2, 3...
 FILENAME = "data"	#Save file
@@ -44,7 +44,8 @@ class Grid(UserList):
       self.data = [0] * 9
     if DEBUG:
       print self
-      
+    if ':' in self:
+      raise TypeError     
   def __str__(self):
     a=''.join([str(a) for a in self.data])
     return a
@@ -131,8 +132,8 @@ def getUsedSpaces(a):
   return b
 
 def getInitialValues(a):
-  b = {"0": 0, "1": -2, "2": -2}
-  return [b[c] for c in a.split(":")]
+  b = {0: 0, 1: -2, 2: -2}
+  return [b[c] for c in a]
 
 
 # * * * * * * * * * * * * 
@@ -171,7 +172,7 @@ def join(a):
 
 def split(a):
   if type(a) == type(""):
-    return a.split(":")
+    return [int(b) for b in a.split(":")]
   elif type(a) == Grid:
     if DEBUG:
       raise TypeError("Passed Spilt type Grid")
@@ -198,7 +199,10 @@ def translateGrid(a, e):
 #  return ":".join([str(a[f]) for f in b[e]])
 
 def translateArray(a):
-  a = split(a)
+  if a == type(""):
+    a = split(a)
+    if DEBUG:
+      raise TypeError("A is a string")
   b = [[0,1,2,  3,4,5,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
   return [Grid([str(a[f]) for f in e]) for e in b]
 
@@ -207,11 +211,14 @@ def translateHash(a):
   return int(str(translateGrid(a,b)))
 
 def translateFindMax(a):
-  a = split(a)
+  if a == type(""):
+    a = split(a)
+    if DEBUG:
+      raise TypeError("A is a string")
   b = [[0,1,2,  3,4,5,  6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2], [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2], [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
-  c = [(Grid([a[f] for f in e]), d) for d, e in enumerate(b)]
+  c = [(Grid([int(a[f]) for f in e]), d) for d, e in enumerate(b)]
   if DEBUG:
-    print "find max\n\t c: ", c, "\n\t max: ", max(c)
+    print "find max\n\t c (translation grids): ", c, "\n\t max: ", max(c), "\n\t a (grid): ", a
   return max(c)[1] 
 
 def translateFindIndex(a, b):
@@ -260,22 +267,22 @@ def getMovePlayer(a):
 
 def getMoveComputer(a):
   # global aidata
-  e = findMaxTranslation(a.toString())
+  e = translateFindMax(a)
   b = translateGrid(a, e)
   if DEBUG:
     #print "\n\t a: ", a, "\n\t b: ", b, "\n\t e: ", e, "\n\t translate array: ", translateArray(a), "\n\t convert: ", a.toString(), "\n\t simplify: ", b, "\n\t AI data: ", aidata
-    print "\n\t a: ", a, "\n\t b: ", b, "\n\t e: ", e, "\n\t simplify: ", b, "\n\t AI data: ", aidata
+    print "\n\t a (grid): ", a, "\n\t b (translated): ", b, "\n\t e (max trans): ", e, "\n\t AI data: ", aidata
   if b in aidata:
     c  = aidata[b]
     d = translateMove(c.index(max(c)), e)
     
     if DEBUG:
-      print "AI\n\t C (scores): ", c, "\n\t D (move): ", d, 
+      print "AI\n\t c (scores): ", c, "\n\t d (move): ", d, 
       print "\n\t sorted: ", sorted(c), "\n\t first: ", max(c)
   else:
     d = pickOne(a.getEmptySpaces()) 
     if DEBUG:
-      print "AI\n\t empty: ", a.getEmptySpaces(), "\n\t move: ", d
+      print "AI\n\t empty: ", a.getEmptySpaces(), "\n\t d (move): ", d
   return d
   #return getEmptySpaces(a)[0]
 
@@ -329,7 +336,7 @@ def adjustAI(a, b, c, j):
     d, e, g = c.pop() # AI move
     if g != j:
       d, e, g = c.pop()
-    h = findMaxTranslation(d)
+    h = translateFindMax(d)
     i = translateGrid(d, h)
     if i in aidata:
       f = aidata[i]
@@ -353,8 +360,8 @@ def adjustAI(a, b, c, j):
     aidata[d] = f
 
     if DEBUG:
-      print "AI win\n\t A: ", a, "\n\t B: ", d, "\n\t C: ", c, "\n\t D: ", d, "\n\t E: ", e, "\n\t F: ", f,
-      print "\n\t index : ", e, "\n\t score: ", f[e], "\n\t change: ", l * k, "\n\t aidata: ", aidata[d]
+      print "AI win\n\t A (winner): ", a, "\n\t B (starting player): ", b, "\n\t C (gamegrids): ", c, "\n\t D (grid): ", d, "\n\t E (move): ", e, "\n\t F (scores): ", f,
+      print "\n\t j (index): ", j, "\n\t f[e] (score): ", f[e], "\n\t l*k (change): ", l * k, "\n\t aidata[d]: ", aidata[d]
 
 
 # * * * * * * * * * * * * * 
@@ -457,7 +464,7 @@ def play():
     move = getMove(player, grid)
     if DEBUG:
       print "move (190): ", move
-    gamegrids.append((grid.toString(), move, player))
+    gamegrids.append((grid, move, player))
     grid[move] = player
     player = swapPlayer(player)    
     winner, row = gameOver(grid)
@@ -490,7 +497,7 @@ def main():
       play()
       dump(aidata)
       #a = raw_input("Play again? ")[0]
-  except (ValueError, IndexError, EOFError):
+  except (ValueError, IndexError, EOFError, KeyboardInterrupt):
     if DEBUG:
       print "Caught Error: User quit?"
       handleError()
