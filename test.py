@@ -3,7 +3,7 @@ from tictac import *
 print "Test translations"
 
 a = [0,1,2,3,4,5,6,7,8]
-b = [split(b) for b in translateArray(a)]
+b = translateArray(a)
 
 def testTranslateArray():
     print "Translate Array"
@@ -13,7 +13,7 @@ def testTranslateArray():
 def testTranslateGrid():
     print "Translate Grid"
     for c in a[:8]:
-        if split(translateGrid(a, c)) == b[c]:
+        if translateGrid(a, c) == b[c]:
             print "\tPass"
         else:
             print "\tFail"
@@ -33,7 +33,7 @@ def testTranslateMove():
     c = 0
     e = 2
     for c in range(0,8):
-        d = split(translateGrid(a, c))
+        d = translateGrid(a, c)
 
         printGrid([str(b) for b in a])
         printGrid(d)
@@ -76,11 +76,11 @@ def testLoadandDump():
     else:
         print "\tFail"
 
-#testTranslateArray()
-#testTranslateGrid()
-#testTranslateMove2()
-#testTranslateMove()
-testLoad()
+testTranslateArray()
+testTranslateGrid()
+testTranslateMove2()
+testTranslateMove()
+#testLoad()
 #testDump()
 #testLoadandDump()
 
