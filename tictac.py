@@ -84,13 +84,20 @@ def printXO(b):
 
 
 def printGrid(a):
-    print
-    print " %i | %i | %i " % (a[0], a[1], a[2])
-    print "---+---+---"
-    print " %i | %i | %i " % (a[3], a[4], a[5])
-    print "---+---+---"
-    print " %i | %i | %i " % (a[6], a[7], a[8])
-
+    if type(a[0]) == type(1):
+        print
+        print " %i | %i | %i " % (a[0], a[1], a[2])
+        print "---+---+---"
+        print " %i | %i | %i " % (a[3], a[4], a[5])
+        print "---+---+---"
+        print " %i | %i | %i " % (a[6], a[7], a[8])
+    else:
+        print
+        print " %c | %c | %c " % (a[0], a[1], a[2])
+        print "---+---+---"
+        print " %c | %c | %c " % (a[3], a[4], a[5])
+        print "---+---+---"
+        print " %c | %c | %c " % (a[6], a[7], a[8])
 
 def printHelp():
     print
@@ -203,14 +210,21 @@ def split(a):
 # * Translation Functions *
 # * * * * * * * * * * * * *
 def translateGetMove(a, b):
+    print "\n\t b", b
+    print "\n\t a", a
     # Given a (current grid) and b (aidata)
     # Requires c in b to get move
     c, d = translateGridMax(a)
+    print "\n\t d", d
+    print "\n\t c", c
     if c in b:
         f = translateGridReverse(b[c], d)
+        print "\n\t f", f
         g = f.index(max(f))
+        print "\n\t g", g
     else:
         g = None
+        print "\n\t g", g
     return g
 
 
@@ -220,8 +234,15 @@ def translateGrid(a, e):
 
 
 def translateGridReverse(a, e):
+    #Returns the Reverse Grid
+    return translateGrid(a, translateReverseIndex(e))
+
+
+def translateReverseIndex(a):
+    # Returns the complementary translation
     b = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 7, 6: 6, 7: 5}
-    return translateGrid(a, b[e])
+    return b[a]
+
 
 def translateArray(a):
     # Finds all of the possible transitions.
@@ -265,7 +286,7 @@ def translateFindIndex(a, b):
     return d
 
 def translateGridMax(a):
-    # Returns the maximum valued grid
+    # Returns the maximum valued grid, and the transition index
     e = translateFindMax(a)
     return (translateGrid(a, e), e)
 
@@ -287,6 +308,7 @@ def swapPlayer(n):
     else:  # n == 2:
         return 1
 
+count = 0
 
 def getMove(n, a, c=None):
     b = 1000
@@ -295,13 +317,14 @@ def getMove(n, a, c=None):
         b = getMoveComputer(a, c)
 
         if b not in a.getEmptySpaces():
-
+            global count
+            count += 1
             print "\n\t b: ", b, " is not in ", a.getEmptySpaces()
-            #raise ValueError
+            if count > 9:
+                raise ValueError
     else:  # n == 2:
+        b = getMovePlayer(a, c)
 
-        if DEBUG:
-            b = getMovePlayer(a, c)
     if b not in a.getEmptySpaces():
         b = getMove(n, a, b)
         if b not in a.getEmptySpaces():
@@ -325,11 +348,8 @@ def getMoveComputer(a, c):
     # Make getMove handle errors
     DEBUGFUNC = 0
     global aidata
-
     b = translateGridMax(a)
-
     if c != None:
-
         if DEBUG or 1:
             print "\nInvalid Computer Move:",
             print "\n\t c: ", c,
@@ -337,11 +357,12 @@ def getMoveComputer(a, c):
         aidata[b[0]][c] -= 1
         if DEBUG or 1:
             print "\n\t c: ", c,
-            print "\n\t aidata[b[0]]: ", aidata[b[0]],
+            print "\n\t aidata[b[0]]: ", aidata[b[0]]
+    
     d = translateGetMove(a, aidata)
+    print "\n\t d", d
 
-    if c == d:
-
+    if c == d and d != None and c != None:
         raise ValueError("c = d")    
 
     if d == None:
@@ -350,7 +371,7 @@ def getMoveComputer(a, c):
         if DEBUG or DEBUGFUNC:
             print "AI\n\t empty: ", aidata[b[0]]
         d = pickOne(Grid())
-
+        d = pickOne(a.getEmptySpaces())
     
 
     return d
@@ -413,7 +434,7 @@ def adjustAI(a, b, c, j):
         print "d, e, g", d, e, g
         if g != j:
             d, e, g = c.pop()
-            print "again d, e, j, g", d, e, j ,g
+            print "again d, e, j, g: ", d, ', ',  e, ', ', j, ', ', g
         h = translateFindMax(d)
         i = translateGrid(d, h)
         print "h , i", h, i
@@ -543,7 +564,6 @@ def handleError():
 # * * * * *
 def play():
     DEBUGFUNC = 0
-
     grid = Grid()
     startingplayer = STARTINGPLAYER
 
@@ -607,4 +627,3 @@ def main():
     dump(aidata)
 if __name__ == "__main__":
     main()
-
