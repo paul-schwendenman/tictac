@@ -27,8 +27,8 @@ STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
 AIADJUST = {'win': 1, 'lose': -1, 'draw': 0, 'last': 2}
-USEDSPACEBUMP = -2      # This is used to adjust intial values for grids
-                        # until smart "invalid move"
+USEDSPACEBUMP = -40      # This is used to adjust intial values for grids
+                         # until smart "invalid move"
 
 
 # * * * * * * * *
@@ -85,11 +85,11 @@ def printXO(b):
 
 def printGrid(a):
     print
-    print " %c | %c | %c " % (a[0], a[1], a[2])
+    print " %i | %i | %i " % (a[0], a[1], a[2])
     print "---+---+---"
-    print " %c | %c | %c " % (a[3], a[4], a[5])
+    print " %i | %i | %i " % (a[3], a[4], a[5])
     print "---+---+---"
-    print " %c | %c | %c " % (a[6], a[7], a[8])
+    print " %i | %i | %i " % (a[6], a[7], a[8])
 
 
 def printHelp():
@@ -202,35 +202,36 @@ def split(a):
 # * * * * * * * * * * * * *
 # * Translation Functions *
 # * * * * * * * * * * * * *
-def translateMove(a, c):
-    b = [[0, 1, 2, 3, 4, 5, 6, 7, 8], [2, 1, 0, 5, 4, 3, 8, 7, 6],
-         [6, 7, 8, 3, 4, 5, 0, 1, 2], [8, 5, 2, 7, 4, 1, 6, 3, 0],
-         [0, 3, 6, 1, 4, 7, 2, 5, 8], [6, 3, 0, 7, 4, 1, 8, 5, 2],
-         [8, 7, 6, 5, 4, 3, 2, 1, 0], [2, 5, 8, 1, 4, 7, 0, 3, 6]]
-    if type(a) == type(""):
-        a = int(a)
-    return    b[c].index(a)
+def translateGetMove(a, b):
+    # Given a (current grid) and b (aidata)
+    # Requires c in b to get move
+    c, d = translateGridMax(a)
+    if c in b:
+        f = translateGridReverse(b[c], d)
+        g = f.index(max(f))
+    else:
+        g = None
+    return g
 
 
 def translateGrid(a, e):
+    # Returns only the selected transition, designated by e.
     return translateArray(a)[e]
-#    b = [[0,1,2, 3,4,5, 6,7,8], [2,1,0, 5,4,3, 8,7,6], [6,7,8, 3,4,5, 0,1,2],
-#         [8,5,2, 7,4,1, 6,3,0], [0,3,6, 1,4,7, 2,5,8], [6,3,0, 7,4,1, 8,5,2],
-#         [8,7,6, 5,4,3, 2,1,0], [2,5,8, 1,4,7, 0,3,6]]
-#    return ":".join([str(a[f]) for f in b[e]])
 
+
+def translateGridReverse(a, e):
+    b = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 7, 6: 6, 7: 5}
+    return translateGrid(a, b[e])
 
 def translateArray(a):
+    # Finds all of the possible transitions.
     DEBUGFUNC = 0
     if a == type(""):
         a = split(a)
         if DEBUG or DEBUGFUNC:
             raise TypeError("A is a string")
-    b = [[0, 1, 2, 3, 4, 5, 6, 7, 8], [2, 1, 0, 5, 4, 3, 8, 7, 6],
-         [6, 7, 8, 3, 4, 5, 0, 1, 2], [8, 5, 2, 7, 4, 1, 6, 3, 0],
-         [0, 3, 6, 1, 4, 7, 2, 5, 8], [6, 3, 0, 7, 4, 1, 8, 5, 2],
-         [8, 7, 6, 5, 4, 3, 2, 1, 0], [2, 5, 8, 1, 4, 7, 0, 3, 6]]
-    return [Grid([str(a[f]) for f in e]) for e in b]
+    b = translateData()
+    return [Grid([a[f] for f in e]) for e in b]
 
 
 def translateHash(a):
@@ -239,16 +240,15 @@ def translateHash(a):
 
 
 def translateFindMax(a):
+    # Returns the highest valued transition.
     DEBUGFUNC = 0
     if a == type(""):
         a = split(a)
         if DEBUG or DEBUGFUNC:
             raise TypeError("A is a string")
-    b = [[0, 1, 2, 3, 4, 5, 6, 7, 8], [2, 1, 0, 5, 4, 3, 8, 7, 6],
-         [6, 7, 8, 3, 4, 5, 0, 1, 2], [8, 5, 2, 7, 4, 1, 6, 3, 0],
-         [0, 3, 6, 1, 4, 7, 2, 5, 8], [6, 3, 0, 7, 4, 1, 8, 5, 2],
-         [8, 7, 6, 5, 4, 3, 2, 1, 0], [2, 5, 8, 1, 4, 7, 0, 3, 6]]
+    b = translateData()
     c = [(Grid([int(a[f]) for f in e]), d) for d, e in enumerate(b)]
+    #Remove the above int()
     if DEBUG or DEBUGFUNC:
         print "find max\n\t c (translation grids): ", c,
         print "\n\t max: ", max(c), "\n\t a (grid): ", a
@@ -264,6 +264,19 @@ def translateFindIndex(a, b):
     d = c.index(b)
     return d
 
+def translateGridMax(a):
+    # Returns the maximum valued grid
+    e = translateFindMax(a)
+    return (translateGrid(a, e), e)
+
+
+def translateData():
+    # Returns the transitions used for all 
+    return [[0, 1, 2, 3, 4, 5, 6, 7, 8], [2, 1, 0, 5, 4, 3, 8, 7, 6],
+            [6, 7, 8, 3, 4, 5, 0, 1, 2], [8, 5, 2, 7, 4, 1, 6, 3, 0],
+            [0, 3, 6, 1, 4, 7, 2, 5, 8], [6, 3, 0, 7, 4, 1, 8, 5, 2],
+            [8, 7, 6, 5, 4, 3, 2, 1, 0], [2, 5, 8, 1, 4, 7, 0, 3, 6]]
+
 
 # * * * * * * * * * * * * * * *
 # * Player Movement Functions *
@@ -278,14 +291,22 @@ def swapPlayer(n):
 def getMove(n, a, c=None):
     b = 1000
     if n == 1:
+
         b = getMoveComputer(a, c)
+
         if b not in a.getEmptySpaces():
+
             print "\n\t b: ", b, " is not in ", a.getEmptySpaces()
-            raise ValueError
+            #raise ValueError
     else:  # n == 2:
-        b = getMovePlayer(a, c)
+
+        if DEBUG:
+            b = getMovePlayer(a, c)
     if b not in a.getEmptySpaces():
         b = getMove(n, a, b)
+        if b not in a.getEmptySpaces():
+            raise ValueError
+                
     return b
 
 
@@ -302,29 +323,36 @@ def getMovePlayer(a, c):
 
 def getMoveComputer(a, c):
     # Make getMove handle errors
-    DEBUGFUNC = 1
-    # global aidata
-    e = translateFindMax(a)
-    b = translateGrid(a, e)
-    if DEBUG or DEBUGFUNC:
-        #print "\n\t a: ", a, "\n\t b: ", b, "\n\t e: ", e,
-        #print "\n\t translate array: ", translateArray(a),
-        #print "\n\t convert: ", a.toString(), "\n\t simplify: ", b,
-        #print "\n\t AI data: ", aidata
-        print "\n\t a (grid): ", a, "\n\t b (translated): ", b, type(b),
-        print "\n\t e (max trans): ", e, "\n\t AI data: ", aidata,
-        print "\n\t b in aidata: ", b in aidata
-    if b in aidata:
-        c = aidata[b]
-        d = translateMove(c.index(max(c)), e)
+    DEBUGFUNC = 0
+    global aidata
 
+    b = translateGridMax(a)
+
+    if c != None:
+
+        if DEBUG or 1:
+            print "\nInvalid Computer Move:",
+            print "\n\t c: ", c,
+            print "\n\t aidata[b[0]]: ", aidata[b[0]],
+        aidata[b[0]][c] -= 1
+        if DEBUG or 1:
+            print "\n\t c: ", c,
+            print "\n\t aidata[b[0]]: ", aidata[b[0]],
+    d = translateGetMove(a, aidata)
+
+    if c == d:
+
+        raise ValueError("c = d")    
+
+    if d == None:
+        # Should be Intializing 'new' states 
+        aidata[b[0]] = Grid()
         if DEBUG or DEBUGFUNC:
-            print "AI\n\t c (scores): ", c, "\n\t d (move): ", d,
-            print "\n\t sorted: ", sorted(c), "\n\t first: ", max(c)
-    else:
-        d = pickOne(a.getEmptySpaces())
-        if DEBUG or DEBUGFUNC:
-            print "AI\n\t empty: ", a.getEmptySpaces(), "\n\t d (move): ", d
+            print "AI\n\t empty: ", aidata[b[0]]
+        d = pickOne(Grid())
+
+    
+
     return d
     #return getEmptySpaces(a)[0]
 
@@ -369,23 +397,31 @@ def adjustAI(a, b, c, j):
     self = j
     if a == -1:  # draw
         k = AIADJUST['draw']
+        print "a: ", a, " draw"
     elif a == self:  # win
         k = AIADJUST['win']
+        print "a: ", a, " win"
     else:  # loss
         k = AIADJUST['lose']
+        print "a: ", a, " lose"
     if b != j:
         if DEBUG or DEBUGFUNC:
             print "encountered b = ", b, " should be ", j
         c.pop()
     while len(c) >= 2:
         d, e, g = c.pop()  # AI move
+        print "d, e, g", d, e, g
         if g != j:
             d, e, g = c.pop()
+            print "again d, e, j, g", d, e, j ,g
         h = translateFindMax(d)
         i = translateGrid(d, h)
+        print "h , i", h, i
         if i in aidata:
+            print "in"
             f = aidata[i]
         else:
+            print "not in"
             # Fix this:
             #	Add initial values to Grid?
             f = getInitialValues(d)
@@ -506,26 +542,33 @@ def handleError():
 # * Main  *
 # * * * * *
 def play():
-    DEBUGFUNC = 1
+    DEBUGFUNC = 0
+
     grid = Grid()
     startingplayer = STARTINGPLAYER
+
     winner = 0
     gamegrids = []
+
     global statdata
 
     player = startingplayer
     while winner == 0:
+
         move = getMove(player, grid)
+
         if DEBUG or DEBUGFUNC:
+
             print "move (190): ", move
         gamegrids.append((grid, move, player))
         grid[move] = player
+
         player = swapPlayer(player)
         winner, row = gameOver(grid)
+
+
     analyzeStats(winner, statdata)
-
     printXO(grid)
-
     if DEBUG or DEBUGFUNC:
         print "Game grids (525): ", len(gamegrids), gamegrids
     for index in range(1, 3):
@@ -537,12 +580,15 @@ def play():
 def main():
     # na = 'y'
     DEBUGFUNC = 0
+
     global aidata
     global statdata
+
     # b = raw_input("Enter name to load previous \
     #                memory or \"new\" to start a new account: ")
     try:
         while 1:  # a == 'y' or a == 'Y':
+
             aidata = load()
             if DEBUG or DEBUGFUNC:
                 try:
@@ -555,10 +601,10 @@ def main():
     except (ValueError, IndexError, EOFError, KeyboardInterrupt):
         if DEBUG or DEBUGFUNC:
             print "Caught Error: User quit?"
-            handleError()
+        handleError()
     if DISPLAYSTATS:
         printStats(statdata)
     dump(aidata)
-
 if __name__ == "__main__":
     main()
+
