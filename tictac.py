@@ -23,6 +23,7 @@ statdata = [0, 0, 0, []]
 
 DEBUG = 0               # Choose: 0 or 1
 DISPLAYSTATS = 0
+RECORD = 0              # Toggle Saving Data
 STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
@@ -210,16 +211,18 @@ def split(a):
 # * Translation Functions *
 # * * * * * * * * * * * * *
 def translateGetMove(a, b):
-    print "\n\t b", b
-    print "\n\t a", a
+    print "translateGetMove: ",
+    print "\n\t b (aidata)", b,
+    print "\n\t a (grid)", a,
     # Given a (current grid) and b (aidata)
     # Requires c in b to get move
     c, d = translateGridMax(a)
-    print "\n\t d", d
-    print "\n\t c", c
+    print "\n\t d (transition index)", d,
+    print "\n\t c", c,
     if c in b:
         f = translateGridReverse(b[c], d)
-        print "\n\t f", f
+        print "\n\t b[c]: ", b[c],
+        print "\n\t f", f,
         g = f.index(max(f))
         print "\n\t g", g
     else:
@@ -431,32 +434,26 @@ def adjustAI(a, b, c, j):
         c.pop()
     while len(c) >= 2:
         d, e, g = c.pop()  # AI move
-        print "d, e, g", d, e, g
+        print "d, e, g, j", d, e, g, j
+        printXO(d)
         if g != j:
             d, e, g = c.pop()
-            print "again d, e, j, g: ", d, ', ',  e, ', ', j, ', ', g
-        h = translateFindMax(d)
-        i = translateGrid(d, h)
-        print "h , i", h, i
+            print "again d, e, g, j: ", d, ',',  e, ',', g, ',', j
+            printXO(d)
+        i, h = translateGridMax(d)
         if i in aidata:
             print "in"
             f = aidata[i]
+            m = translateGridReverse(f, h)
         else:
-            print "not in"
-            # Fix this:
-            #	Add initial values to Grid?
-            f = getInitialValues(d)
-
-        if DEBUG or DEBUGFUNC:
-            print "f: ", f
-
+            print i, aidata
+            raise Exception("i not in data")
         if len(c) > 2:
             l = AIADJUST['last']
-            if DEBUG or 1:
-                print "Last Move?"
         else:
             l = 1
-        f[e] += k * l
+        m[e] += k * l
+        f = translateGrid(m, h)
         aidata[d] = f
         if DEBUG or DEBUGFUNC:
             print "AI win\n\t A (winner): ", a,
@@ -563,30 +560,21 @@ def handleError():
 # * Main  *
 # * * * * *
 def play():
-    DEBUGFUNC = 0
+    DEBUGFUNC = 1
     grid = Grid()
     startingplayer = STARTINGPLAYER
-
     winner = 0
     gamegrids = []
-
     global statdata
-
     player = startingplayer
     while winner == 0:
-
         move = getMove(player, grid)
-
         if DEBUG or DEBUGFUNC:
-
             print "move (190): ", move
-        gamegrids.append((grid, move, player))
+        gamegrids.append((grid[:], move, player))
         grid[move] = player
-
         player = swapPlayer(player)
         winner, row = gameOver(grid)
-
-
     analyzeStats(winner, statdata)
     printXO(grid)
     if DEBUG or DEBUGFUNC:
@@ -609,7 +597,8 @@ def main():
     try:
         while 1:  # a == 'y' or a == 'Y':
 
-            aidata = load()
+            if RECORD:
+                aidata = load()
             if DEBUG or DEBUGFUNC:
                 try:
                     print "AI data: ", aidata
@@ -624,6 +613,7 @@ def main():
         handleError()
     if DISPLAYSTATS:
         printStats(statdata)
-    dump(aidata)
+    if RECORD:
+        dump(aidata)
 if __name__ == "__main__":
     main()
