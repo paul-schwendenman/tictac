@@ -7,14 +7,26 @@ from tictac import *
 # * * * * * * * * * * * * 
 # * Modified Functions  * 
 # * * * * * * * * * * * *
-def getMove(n, a):
-    b = -1
-    while b not in a.getEmptySpaces():
-        b = getMoveComputer(a)
+def getMove(n, a, c=None):
+    b = 1000
+    if n == 1:
+
+        b = getMoveComputer(a, c)
+
         if b not in a.getEmptySpaces():
+            global count
+            count += 1
             print "\n\t b: ", b, " is not in ", a.getEmptySpaces()
+            if count > 9:
+                raise ValueError
+    if b not in a.getEmptySpaces():
+        b = getMove(n, a, b)
+        if b not in a.getEmptySpaces():
             raise ValueError
+                
     return b
+
+
 
 def handleGameOver(a, b, c, d):
     handleGameOverComputer(a, b, c, d)

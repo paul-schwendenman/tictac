@@ -22,8 +22,8 @@ statdata = [0, 0, 0, []]
 
 
 DEBUG = 0               # Choose: 0 or 1
-DISPLAYSTATS = 0
-RECORD = 0              # Toggle Saving Data
+DISPLAYSTATS = 1
+RECORD = 1              # Toggle Saving Data
 STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
@@ -211,23 +211,14 @@ def split(a):
 # * Translation Functions *
 # * * * * * * * * * * * * *
 def translateGetMove(a, b):
-    print "translateGetMove: ",
-    print "\n\t b (aidata)", b,
-    print "\n\t a (grid)", a,
     # Given a (current grid) and b (aidata)
     # Requires c in b to get move
     c, d = translateGridMax(a)
-    print "\n\t d (transition index)", d,
-    print "\n\t c", c,
     if c in b:
         f = translateGridReverse(b[c], d)
-        print "\n\t b[c]: ", b[c],
-        print "\n\t f", f,
         g = f.index(max(f))
-        print "\n\t g", g
     else:
         g = None
-        print "\n\t g", g
     return g
 
 
@@ -325,7 +316,7 @@ def getMove(n, a, c=None):
             print "\n\t b: ", b, " is not in ", a.getEmptySpaces()
             if count > 9:
                 raise ValueError
-    else:  # n == 2:
+    else:  # n == 1
         b = getMovePlayer(a, c)
 
     if b not in a.getEmptySpaces():
@@ -336,10 +327,11 @@ def getMove(n, a, c=None):
     return b
 
 
+
 def getMovePlayer(a, c):
     printXO(a)
     if c != None:
-        print "Invaild Move: ", c + 1
+        print "Invalid Move: ", c + 1
     b = raw_input("Move? ")[0]
     if b == "h" or b == "H":
         printHelp()
@@ -353,17 +345,19 @@ def getMoveComputer(a, c):
     global aidata
     b = translateGridMax(a)
     if c != None:
-        if DEBUG or 1:
-            print "\nInvalid Computer Move:",
+        f = [0, 1, 2, 3, 4, 5, 6, 7, 8,]
+        e = translateGrid(f, b[1])[c]
+        if DEBUG:
+            print "Invalid Computer Move:",
             print "\n\t c: ", c,
-            print "\n\t aidata[b[0]]: ", aidata[b[0]],
-        aidata[b[0]][c] -= 1
-        if DEBUG or 1:
-            print "\n\t c: ", c,
-            print "\n\t aidata[b[0]]: ", aidata[b[0]]
+            print "\t e: ", e,
+            print "\t aidata[b[0]]: ", aidata[b[0]],
+        aidata[b[0]][e] -= 1
+        if DEBUG:
+            print "\nAfter"
+            print "\t aidata[b[0]]: ", aidata[b[0]]
     
     d = translateGetMove(a, aidata)
-    print "\n\t d", d
 
     if c == d and d != None and c != None:
         raise ValueError("c = d")    
@@ -375,8 +369,6 @@ def getMoveComputer(a, c):
             print "AI\n\t empty: ", aidata[b[0]]
         d = pickOne(Grid())
         d = pickOne(a.getEmptySpaces())
-    
-
     return d
     #return getEmptySpaces(a)[0]
 
@@ -415,19 +407,23 @@ def handleGameOverComputer(a, b, c, d):
     adjustAI(a, b, c, d)
 
 
-def adjustAI(a, b, c, j):
-    DEBUGFUNC = 1
-    global aidata
-    self = j
+def quantifyResult(a, b):
     if a == -1:  # draw
-        k = AIADJUST['draw']
+        c = AIADJUST['draw']
         print "a: ", a, " draw"
-    elif a == self:  # win
-        k = AIADJUST['win']
+    elif a == b:  # win
+        c = AIADJUST['win']
         print "a: ", a, " win"
     else:  # loss
-        k = AIADJUST['lose']
+        c = AIADJUST['lose']
         print "a: ", a, " lose"
+    return c
+
+
+def adjustAI(a, b, c, j):
+    DEBUGFUNC = 0
+    global aidata
+    k = quantifyResult(a, j)
     if b != j:
         if DEBUG or DEBUGFUNC:
             print "encountered b = ", b, " should be ", j
@@ -560,7 +556,7 @@ def handleError():
 # * Main  *
 # * * * * *
 def play():
-    DEBUGFUNC = 1
+    DEBUGFUNC = 0
     grid = Grid()
     startingplayer = STARTINGPLAYER
     winner = 0
