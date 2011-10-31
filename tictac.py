@@ -100,6 +100,7 @@ def printGrid(a):
         print "---+---+---"
         print " %c | %c | %c " % (a[6], a[7], a[8])
 
+
 def printHelp():
     print
     print " 1 | 2 | 3 "
@@ -279,6 +280,7 @@ def translateFindIndex(a, b):
     d = c.index(b)
     return d
 
+
 def translateGridMax(a):
     # Returns the maximum valued grid, and the transition index
     e = translateFindMax(a)
@@ -286,7 +288,7 @@ def translateGridMax(a):
 
 
 def translateData():
-    # Returns the transitions used for all 
+    # Returns the transitions used for all
     return [[0, 1, 2, 3, 4, 5, 6, 7, 8], [2, 1, 0, 5, 4, 3, 8, 7, 6],
             [6, 7, 8, 3, 4, 5, 0, 1, 2], [8, 5, 2, 7, 4, 1, 6, 3, 0],
             [0, 3, 6, 1, 4, 7, 2, 5, 8], [6, 3, 0, 7, 4, 1, 8, 5, 2],
@@ -303,6 +305,7 @@ def swapPlayer(n):
         return 1
 
 count = 0
+
 
 def getMove(n, a, c=None):
     b = 1000
@@ -323,9 +326,8 @@ def getMove(n, a, c=None):
         b = getMove(n, a, b)
         if b not in a.getEmptySpaces():
             raise ValueError
-                
-    return b
 
+    return b
 
 
 def getMovePlayer(a, c):
@@ -345,7 +347,7 @@ def getMoveComputer(a, c):
     global aidata
     b = translateGridMax(a)
     if c != None:
-        f = [0, 1, 2, 3, 4, 5, 6, 7, 8,]
+        f = [0, 1, 2, 3, 4, 5, 6, 7, 8, ]
         e = translateGrid(f, b[1])[c]
         if DEBUG:
             print "Invalid Computer Move:",
@@ -356,14 +358,14 @@ def getMoveComputer(a, c):
         if DEBUG:
             print "\nAfter"
             print "\t aidata[b[0]]: ", aidata[b[0]]
-    
+
     d = translateGetMove(a, aidata)
 
     if c == d and d != None and c != None:
-        raise ValueError("c = d")    
+        raise ValueError("c = d")
 
     if d == None:
-        # Should be Intializing 'new' states 
+        # Should be Intializing 'new' states
         aidata[b[0]] = Grid()
         if DEBUG or DEBUGFUNC:
             print "AI\n\t empty: ", aidata[b[0]]
