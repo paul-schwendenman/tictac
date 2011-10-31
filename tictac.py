@@ -27,9 +27,8 @@ RECORD = 1              # Toggle Saving Data
 STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
-AIADJUST = {'win': 1, 'lose': -1, 'draw': 0, 'last': 2}
-USEDSPACEBUMP = -40      # This is used to adjust intial values for grids
-                         # until smart "invalid move"
+AIADJUST = {'win': 1, 'lose': -2, 'draw': -1, 'last': 2}
+USEDSPACE = -4      # This is used to adjust values for used spaces in grids
 
 
 # * * * * * * * *
@@ -359,7 +358,7 @@ def getMoveComputer(a, c):
             print "\t e:", e,
             print "\t b[1]:", b[1],
             print "\n\t aidata[b[0]]:", aidata[b[0]].toString(),
-        aidata[b[0]][e] -= 1
+        aidata[b[0]][e] += USEDSPACE
         if DEBUG or DEBUGFUNC:
             print "\nAfter:"
             print "\t aidata[b[0]]:", aidata[b[0]].toString()
