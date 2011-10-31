@@ -142,7 +142,7 @@ def testLoadandDump():
     else:
         print "\tFail"
 
-#testTranslateArray()
+testTranslateArray()
 #testTranslateGrid()
 #testTranslateMove2()
 #testTranslateMove3()
@@ -152,4 +152,4 @@ def testLoadandDump():
 #testLoad()
 #testDump()
 #testLoadandDump()
-testGetMove()
+#testGetMove()

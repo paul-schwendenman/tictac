@@ -1,24 +1,21 @@
-aidata = {}
+#aidata = {}
 
-times = 100
+times = 1000
 
 from tictac import *
 
 # * * * * * * * * * * * * 
 # * Modified Functions  * 
 # * * * * * * * * * * * *
+count = 0
+
 def getMove(n, a, c=None):
-    b = 1000
-    if n == 1:
+    b = getMoveComputer(a, c)
 
-        b = getMoveComputer(a, c)
-
-        if b not in a.getEmptySpaces():
-            global count
-            count += 1
-            print "\n\t b: ", b, " is not in ", a.getEmptySpaces()
-            if count > 9:
-                raise ValueError
+    if b not in a.getEmptySpaces():
+        global count
+        count += 1
+        #print "\n\t b: ", b, " is not in ", a.getEmptySpaces()
     if b not in a.getEmptySpaces():
         b = getMove(n, a, b)
         if b not in a.getEmptySpaces():
@@ -51,17 +48,17 @@ if __name__ == '__main__':
         player = startingplayer
         while winner == 0:
             move = getMove(player, grid)
-            gamegrids.append((grid.toString(), move, player))
+            gamegrids.append((grid[:], move, player))
             grid[move] = player
             player = swapPlayer(player)        
             winner, row = gameOver(grid)
         
-        printXO(grid)
+        #printXO(grid)
         
         analyzeStats(winner, b)
 
-        for index in range(1,3):
-            handleGameOver(winner, startingplayer, gamegrids, index)
+        for index in [1, 2]:
+            handleGameOver(winner, startingplayer, gamegrids[:], index)
     
     printStats(b)
     
