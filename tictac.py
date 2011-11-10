@@ -1,9 +1,11 @@
-# * * * * * * * * * * * *
-# * Paul Schwendenman   *
-# * 09/20/11            *
-# * If you have to ask: *
-# * You aren't allowed  *
-# * * * * * * * * * * * *
+'''
+ * * * * * * * * * * * *
+ * Paul Schwendenman   *
+ * 09/20/11            *
+ * If you have to ask: *
+ * You aren't allowed  *
+ * * * * * * * * * * * *
+'''
 
 # * * * * * * *
 # * Imported  *
@@ -27,10 +29,10 @@ RECORD = 1              # Toggle Saving Data
 STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
-AIADJUST = {'win': 1, 'lose': -2, 'draw': -1, 'last': 2}
+AIADJUST = {'win': 6, 'lose': -3, 'draw': -1, 'last': 1}
 USEDSPACE = -4      # This is used to adjust values for used spaces in grids
-
-
+AICOUNT = 50        # Number of times to try and not pick a used move
+USENUMBERPAD = 0    # Option for tubbs
 # * * * * * * * *
 # * Grid Class  *
 # * * * * * * * *
@@ -80,10 +82,16 @@ class Grid(UserList):
 # * Grid Display Functions  *
 # * * * * * * * * * * * * * *
 def printXO(b):
+    '''
+    Prints the tictactoe grid with XOs
+    '''
     printGrid(b.returnXO())
 
 
 def printGrid(a):
+    '''
+    Basic formatting for lists
+    '''
     if type(a[0]) == type(1):
         print
         print " %i | %i | %i " % (a[0], a[1], a[2])
@@ -101,18 +109,66 @@ def printGrid(a):
 
 
 def printHelp():
+    '''
+    Helpful grid
+    '''
     print
-    print " 1 | 2 | 3 "
-    print "---+---+---"
-    print " 4 | 5 | 6 "
-    print "---+---+---"
-    print " 7 | 8 | 9 "
+    if USENUMBERPAD:
+        print " 7 | 8 | 9 "
+        print "---+---+---"
+        print " 4 | 5 | 6 "
+        print "---+---+---"
+        print " 1 | 2 | 3 "
+    else:
+        print " 1 | 2 | 3 "
+        print "---+---+---"
+        print " 4 | 5 | 6 "
+        print "---+---+---"
+        print " 7 | 8 | 9 "
 
+def printAIData(a):
+    ''' 
+    Prints a useful representation of the AIdata variable.
+    '''
+    print len(a)
+    for b, c in a.iteritems():
+        d = b.returnXO()
+        printEighteen(d, c)    
+
+def printEighteen(a, b):
+    '''
+    Prints a pair of 3x3 grids next to each other.
+    '''
+    print "%c %c %c %2i %2i %2i" % (a[0], a[1], a[2], b[0], b[1], b[2])
+    print "%c %c %c %2i %2i %2i" % (a[3], a[4], a[5], b[3], b[4], b[5])
+    print "%c %c %c %2i %2i %2i" % (a[6], a[7], a[8], b[6], b[7], b[8])
+    print
+
+def printGameGrids(a, e):
+    '''
+    Prints a resonable representation of the value of Game Grids and thus the history of the game.
+    '''
+    b = [d[0].returnXO() for d in a]
+    b.append(e.returnXO())
+    for c in b:
+        print c[0], c[1], c[2], "|",
+    print
+    for c in b:
+        print c[3], c[4], c[5], "|",
+    print
+    for c in b:
+        print c[6], c[7], c[8], "|",
+    print
+    print
 
 # * * * * * * * * * * * * * * * *
-# * Mostly Depricated Functions * <-- Remove?
+# * Mostly Depricated Functions * <-- Remove them?
 # * * * * * * * * * * * * * * * *
 def convertGridToNumber(a):
+    '''
+    Hashs a list based on its contents
+    '''
+    # int(str(a))  # <-- better?
     c = 0
     for b in a:
         c = c * 10
@@ -121,13 +177,19 @@ def convertGridToNumber(a):
 
 
 def convertNumberToGrid(a):
-    b = []
+    '''
+    Turns a hash into a list.
+    '''
+    b = []  # Make this use Grid()?
     for c in str(a):
         b.append(int(c))
     return b
 
 
 def convertGridToXO(a):
+    '''
+    Returns a list based on values of the input Grid
+    '''
     b = []
     c = {0: " ", 1: "X", 2: "O"}
     for e in a:
@@ -136,22 +198,33 @@ def convertGridToXO(a):
 
 
 def getEmptySpaces(a):
+    '''
+    Returns a list of the spaces that are valued empty.
+    '''
+    empty = 0
     b = []
     for c, d in enumerate(a):
-        if d == 0:
+        if d == empty:
             b.append(c)
     return b
 
 
 def getUsedSpaces(a):
+    '''
+    Returns a list of (spaces) list indices that are not valued empty.
+    '''
+    empty = 0
     b = []
     for c, d in enumerate(a):
-        if d != 0:
+        if d != empty:
             b.append(c)
     return b
 
 
 def getInitialValues(a):
+    '''
+    Return 
+    '''
     b = {0: 0, 1: USEDSPACEBUMP, 2: USEDSPACEBUMP}
     return [b[c] for c in a]
 
@@ -317,8 +390,8 @@ def getMove(n, a, c=None):
             count += 1
             if DEBUG:
                 print "\n\t b: ", b, " is not in ", a.getEmptySpaces()
-            if count > 9:
-                raise ValueError
+            if count > AICOUNT:
+                raise ValueError("Count greater than %i" % AICOUNT)
     else:  # n == 1
         b = getMovePlayer(a, c)
 
@@ -337,7 +410,8 @@ def getMovePlayer(a, c):
     b = raw_input("Move? ")[0]
     if b == "h" or b == "H":
         printHelp()
-    b = int(b) - 1
+    if USENUMBERPAD:
+        b = {7:1, 8:2, 9:3, 4:4, 5:5, 6:6, 1:7, 2:8, 3:9}[int(b)] - 1
     return b
 
 
@@ -525,7 +599,7 @@ def analyzeStats(a, b):
 # * File Control Functions  *
 # * * * * * * * * * * * * * *
 def load():
-    DEBUGFUNC = 0
+    DEBUGFUNC = 1
     try:
         a = open(FILENAME)
         c = pickle.load(a)
@@ -540,7 +614,7 @@ def load():
 
 
 def dump(a):
-    DEBUGFUNC = 0
+    DEBUGFUNC = 1
     b = open(FILENAME, "w")
     pickle.dump(a, b)
     if DEBUG or DEBUGFUNC:
@@ -552,6 +626,9 @@ def dump(a):
 # * Error Catching  *
 # * * * * * * * * * *
 def handleError():
+    '''
+    An in house represention for Error Handling.
+    '''
     import sys
     stop = 1
     line = []
