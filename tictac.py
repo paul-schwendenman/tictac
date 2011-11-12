@@ -16,23 +16,18 @@ from UserList import UserList
 # * * * * * * * * * * *
 # * Global Variables  *
 # * * * * * * * * * * *
-aidata = {}
-  # this is a dictionary of numbers that point to a dictionary with choices and
-  # 	success rates
-  # ex. aidata = {121000000 : [2,3,2, 3,4,4, 1,-3,4]} where [2]=3
-statdata = [0, 0, 0, []]
-
-
 DEBUG = 0               # Choose: 0 or 1
 DISPLAYSTATS = 1
 RECORD = 1              # Toggle Saving Data
-STARTINGPLAYER = 1      # Choose: 1 or 2
+STARTINGPLAYER = 2      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
 AIADJUST = {'win': 6, 'lose': -3, 'draw': -1, 'last': 1}
 USEDSPACE = -4      # This is used to adjust values for used spaces in grids
 AICOUNT = 50        # Number of times to try and not pick a used move
 USENUMBERPAD = 0    # Option for tubbs
+
+
 # * * * * * * * *
 # * Grid Class  *
 # * * * * * * * *
@@ -144,12 +139,13 @@ def printEighteen(a, b):
     print "%c %c %c %2i %2i %2i" % (a[6], a[7], a[8], b[6], b[7], b[8])
     print
 
-def printGameGrids(a, e):
+def printGameGrids(a, e=None):
     '''
     Prints a resonable representation of the value of Game Grids and thus the history of the game.
     '''
     b = [d[0].returnXO() for d in a]
-    b.append(e.returnXO())
+    if e != None:
+        b.append(e.returnXO())
     for c in b:
         print c[0], c[1], c[2], "|",
     print
@@ -379,11 +375,11 @@ def swapPlayer(n):
 count = 0
 
 
-def getMove(n, a, c=None):
+def getMove(n, a, aidata, c=None):
     b = 1000
     if n == 1:
 
-        b = getMoveComputer(a, c)
+        b = getMoveComputer(a, c, aidata)
 
         if b not in a.getEmptySpaces():
             global count
@@ -396,7 +392,7 @@ def getMove(n, a, c=None):
         b = getMovePlayer(a, c)
 
     if b not in a.getEmptySpaces():
-        b = getMove(n, a, b)
+        b = getMove(n, a, aidata, b)
         if b not in a.getEmptySpaces():
             raise ValueError
 
@@ -411,14 +407,14 @@ def getMovePlayer(a, c):
     if b == "h" or b == "H":
         printHelp()
     if USENUMBERPAD:
-        b = {7:1, 8:2, 9:3, 4:4, 5:5, 6:6, 1:7, 2:8, 3:9}[int(b)] - 1
-    return b
+        return {7:1, 8:2, 9:3, 4:4, 5:5, 6:6, 1:7, 2:8, 3:9}[int(b)] - 1
+    else:
+        return int(b) - 1
 
 
-def getMoveComputer(a, c):
+def getMoveComputer(a, c, aidata):
     # Make getMove handle errors
     DEBUGFUNC = 0
-    global aidata
     b = translateGridMax(a)
     if DEBUG or DEBUGFUNC:
         printXO(a)
@@ -463,17 +459,17 @@ def pickOne(a):
 # * * * * * * * * * * * * * * * * *
 # * Player Finalization Handlers  *
 # * * * * * * * * * * * * * * * * *
-def handleGameOver(a, b, c, d):
+def handleGameOver(a, b, c, d, e):
     if d == 2:
-        handleGameOverPlayer(a, d)
+        handleGameOverPlayer(a, d, c)
     elif d == 1:
-        handleGameOverComputer(a, b, c, d)
+        handleGameOverComputer(a, b, c, d, e)
     else:
         a = "Player not 1 or 2" + str(d)
         raise ValueError(a)
 
 
-def handleGameOverPlayer(a, b):
+def handleGameOverPlayer(a, b, c):
     if a == b:
         print "You won! computer lost"
     elif a == -1:
@@ -483,10 +479,11 @@ def handleGameOverPlayer(a, b):
     else:
         print "Winner not -1, 1, or 2\n\tWinner: ", winner
         raise IndexError
+    printGameGrids(c)
 
 
-def handleGameOverComputer(a, b, c, d):
-    adjustAI(a, b, c, d)
+def handleGameOverComputer(a, b, c, d, e):
+    adjustAI(a, b, c, d, e)
 
 
 def quantifyResult(a, b):
@@ -505,9 +502,9 @@ def quantifyResult(a, b):
     return c
 
 
-def adjustAI(a, b, c, j):
+def adjustAI(a, b, c, j, aidata):
     DEBUGFUNC = 0
-    global aidata
+    assert gameOver(c.pop()[0])[0] != 0
     k = quantifyResult(a, j)
     if b != j:
         if DEBUG or DEBUGFUNC:
@@ -647,43 +644,47 @@ def handleError():
 # * * * * *
 # * Main  *
 # * * * * *
-def play():
+def play(aidata, statdata):
     DEBUGFUNC = 0
     grid = Grid()
     startingplayer = STARTINGPLAYER
     winner = 0
+    print "\t aidata: ", len(aidata)
     gamegrids = []
-    global statdata
     player = startingplayer
     while winner == 0:
-        move = getMove(player, grid)
+        move = getMove(player, grid, aidata)
+        gamegrids.append((grid[:], move, player))
+        player = swapPlayer(player)
         if DEBUG or DEBUGFUNC:
             print "move (578): ", move
-        gamegrids.append((grid[:], move, player))
         grid[move] = player
-        player = swapPlayer(player)
         winner, row = gameOver(grid)
+    gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     printXO(grid)
     if DEBUG or DEBUGFUNC:
         print "Game grids (586): ", len(gamegrids), gamegrids
+    print "\t aidata 676: ", len(aidata)
     for index in range(1, 3):
-        handleGameOver(winner, startingplayer, gamegrids[:], index)
+        handleGameOver(winner, startingplayer, gamegrids[:], index, aidata)
         if DEBUG or DEBUGFUNC:
             print "\n\tLength after: ", len(gamegrids)
+    print "\t aidata: ", len(aidata)
 
 
 def main():
     # na = 'y'
     DEBUGFUNC = 0
 
-    global aidata
-    global statdata
+    aidata = {}
+    statdata = [0, 0, 0, []]
 
     # b = raw_input("Enter name to load previous \
     #                memory or \"new\" to start a new account: ")
     try:
         while 1:  # a == 'y' or a == 'Y':
+            print "\t aidata: ", len(aidata)
 
             if RECORD:
                 aidata = load()
@@ -692,7 +693,9 @@ def main():
                     print "AI data: ", aidata
                 except:
                     print "locals: ", locals()
-            play()
+            print "\t aidata: ", len(aidata)
+
+            play(aidata, statdata)
             dump(aidata)
             # a = raw_input("Play again? ")[0]
     except (ValueError, IndexError, EOFError, KeyboardInterrupt):
@@ -701,6 +704,7 @@ def main():
         handleError()
     if DISPLAYSTATS:
         printStats(statdata)
+    print "\t aidata: ", len(aidata)
     if RECORD:
         dump(aidata)
 if __name__ == "__main__":
