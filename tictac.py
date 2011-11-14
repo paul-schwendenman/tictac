@@ -121,14 +121,16 @@ def printHelp():
         print "---+---+---"
         print " 7 | 8 | 9 "
 
+
 def printAIData(a):
-    ''' 
+    '''
     Prints a useful representation of the AIdata variable.
     '''
     print len(a)
     for b, c in a.iteritems():
         d = b.returnXO()
-        printEighteen(d, c)    
+        printEighteen(d, c)
+
 
 def printEighteen(a, b):
     '''
@@ -139,9 +141,11 @@ def printEighteen(a, b):
     print "%c %c %c %2i %2i %2i" % (a[6], a[7], a[8], b[6], b[7], b[8])
     print
 
+
 def printGameGrids(a, e=None):
     '''
-    Prints a resonable representation of the value of Game Grids and thus the history of the game.
+    Prints a resonable representation of the value of
+    GameGrids and thus the history of the game so far.
     '''
     b = [d[0].returnXO() for d in a]
     if e != None:
@@ -157,6 +161,7 @@ def printGameGrids(a, e=None):
     print
     print
 
+
 def printGrids(a):
     for c in a:
         print "%2i%2i%2i%c" % (c[0], c[1], c[2], "|"),
@@ -168,6 +173,7 @@ def printGrids(a):
         print "%2i%2i%2i%c" % (c[6], c[7], c[8], "|"),
     print
     print
+
 
 # * * * * * * * * * * * * * * * *
 # * Mostly Depricated Functions * <-- Remove them?
@@ -231,7 +237,7 @@ def getUsedSpaces(a):
 
 def getInitialValues(a):
     '''
-    Return 
+    Return
     '''
     b = {0: 0, 1: USEDSPACEBUMP, 2: USEDSPACEBUMP}
     return [b[c] for c in a]
@@ -420,7 +426,7 @@ def getMovePlayer(a, c):
     if b == "h" or b == "H":
         printHelp()
     if USENUMBERPAD:
-        return {7:1, 8:2, 9:3, 4:4, 5:5, 6:6, 1:7, 2:8, 3:9}[int(b)] - 1
+        return {7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: 8}[int(b)]
     else:
         return int(b) - 1
 
@@ -466,7 +472,7 @@ def getMoveComputer(a, c, aidata):
 def pickOne(a):
     '''
     Picks one.
-    First: a[0], last: a[-1], 
+    First: a[0], last: a[-1], random: r(0, len(a) - 1)
     '''
     from random import randint as r
     return a[r(0, len(a) - 1)]
