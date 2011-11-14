@@ -19,7 +19,7 @@ from UserList import UserList
 DEBUG = 0               # Choose: 0 or 1
 DISPLAYSTATS = 1
 RECORD = 1              # Toggle Saving Data
-STARTINGPLAYER = 2      # Choose: 1 or 2
+STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
 AIADJUST = {'win': 6, 'lose': -3, 'draw': -1, 'last': 1}
@@ -157,6 +157,18 @@ def printGameGrids(a, e=None):
     print
     print
 
+def printGrids(a):
+    for c in a:
+        print "%2i%2i%2i%c" % (c[0], c[1], c[2], "|"),
+    print
+    for c in a:
+        print "%2i%2i%2i%c" % (c[3], c[4], c[5], "|"),
+    print
+    for c in a:
+        print "%2i%2i%2i%c" % (c[6], c[7], c[8], "|"),
+    print
+    print
+
 # * * * * * * * * * * * * * * * *
 # * Mostly Depricated Functions * <-- Remove them?
 # * * * * * * * * * * * * * * * *
@@ -285,7 +297,8 @@ def translateGetMove(a, b):
     c, d = translateGridMax(a)
     if c in b:
         f = translateGridReverse(b[c], d)
-        g = f.index(max(f))
+        g = [i for i, j in enumerate(f) if j == max(f)]
+        #g = f.index(max(f))
     else:
         g = None
     return g
@@ -432,7 +445,6 @@ def getMoveComputer(a, c, aidata):
         if DEBUG or DEBUGFUNC:
             print "\nAfter:"
             print "\t aidata[b[0]]:", aidata[b[0]].toString()
-
     d = translateGetMove(a, aidata)
 
     if c == d and d != None and c != None:
@@ -445,15 +457,19 @@ def getMoveComputer(a, c, aidata):
         aidata[b[0]] = Grid()
         if DEBUG or DEBUGFUNC:
             print "\n\t empty: ", aidata[b[0]]
-        d = pickOne(Grid())
-        d = pickOne(a.getEmptySpaces())
-    return d
+        d = Grid()
+        #d = pickOne(a.getEmptySpaces())
+    return pickOne(d)
     #return getEmptySpaces(a)[0]
 
 
 def pickOne(a):
-    # Picks one from list.
-    return a[0]
+    '''
+    Picks one.
+    First: a[0], last: a[-1], 
+    '''
+    from random import randint as r
+    return a[r(0, len(a) - 1)]
 
 
 # * * * * * * * * * * * * * * * * *
@@ -461,7 +477,7 @@ def pickOne(a):
 # * * * * * * * * * * * * * * * * *
 def handleGameOver(a, b, c, d, e):
     if d == 2:
-        handleGameOverPlayer(a, d, c)
+        handleGameOverPlayer(a, d, c, e)
     elif d == 1:
         handleGameOverComputer(a, b, c, d, e)
     else:
@@ -469,7 +485,7 @@ def handleGameOver(a, b, c, d, e):
         raise ValueError(a)
 
 
-def handleGameOverPlayer(a, b, c):
+def handleGameOverPlayer(a, b, c, d):
     if a == b:
         print "You won! computer lost"
     elif a == -1:
@@ -480,6 +496,12 @@ def handleGameOverPlayer(a, b, c):
         print "Winner not -1, 1, or 2\n\tWinner: ", winner
         raise IndexError
     printGameGrids(c)
+    h = []
+    for e in c:
+        f = translateFindMax(e[0])
+        g = translateGridReverse(e[0], f)
+        h.append(d[g] if (g in d) else Grid())
+    printGrids(h)
 
 
 def handleGameOverComputer(a, b, c, d, e):
@@ -649,7 +671,6 @@ def play(aidata, statdata):
     grid = Grid()
     startingplayer = STARTINGPLAYER
     winner = 0
-    print "\t aidata: ", len(aidata)
     gamegrids = []
     player = startingplayer
     while winner == 0:
@@ -663,14 +684,8 @@ def play(aidata, statdata):
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     printXO(grid)
-    if DEBUG or DEBUGFUNC:
-        print "Game grids (586): ", len(gamegrids), gamegrids
-    print "\t aidata 676: ", len(aidata)
     for index in range(1, 3):
         handleGameOver(winner, startingplayer, gamegrids[:], index, aidata)
-        if DEBUG or DEBUGFUNC:
-            print "\n\tLength after: ", len(gamegrids)
-    print "\t aidata: ", len(aidata)
 
 
 def main():
@@ -683,20 +698,16 @@ def main():
     # b = raw_input("Enter name to load previous \
     #                memory or \"new\" to start a new account: ")
     try:
+        if RECORD:
+            aidata = load()
+        if DEBUG or DEBUGFUNC:
+            try:
+                print "AI data: ", aidata
+            except:
+                print "locals: ", locals()
+
         while 1:  # a == 'y' or a == 'Y':
-            print "\t aidata: ", len(aidata)
-
-            if RECORD:
-                aidata = load()
-            if DEBUG or DEBUGFUNC:
-                try:
-                    print "AI data: ", aidata
-                except:
-                    print "locals: ", locals()
-            print "\t aidata: ", len(aidata)
-
             play(aidata, statdata)
-            dump(aidata)
             # a = raw_input("Play again? ")[0]
     except (ValueError, IndexError, EOFError, KeyboardInterrupt):
         if DEBUG or DEBUGFUNC:

@@ -1,11 +1,27 @@
-times = 20
+times = 200
 
 from tictac import *
-#import tictac
 
 # * * * * * * * * *
 # * New Functions *
 # * * * * * * * * *
+
+class ProgressBar:
+    def __init__(self, max):
+        self.max = max
+        self.number = 0
+        self.display()
+        print "\n\t[" + " " * (100) + "]",
+    def update(self, current):
+        number = (current * 100) / self.max
+        if number != self.number:
+            self.number = number
+            self.display()
+        if self.max - current <= 1:
+            print
+    def display(self):
+        print "\r\t[" + "*" * self.number + " " * (100 - self.number) + "] %2i%%" % (self.number),
+    
 
 # * * * * * * * * * * * *
 # * Modified Functions  *
@@ -20,7 +36,7 @@ def getMove(n, a, aidata, c=None):
         count += 1
         #print "\n\t b: ", b, " is not in ", a.getEmptySpaces()
     if b not in a.getEmptySpaces():
-        b = getMove(n, a, b)
+        b = getMove(n, a, aidata, b)
         if b not in a.getEmptySpaces():
             raise ValueError
                 
@@ -59,14 +75,19 @@ DEBUG = 0
 
 if __name__ == '__main__':
     #printAIData(aidata)
-    print "ahhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
     statdata = [0, 0, 0, []]
+    aidata = load()
+    bar = ProgressBar(times)
     for a in range(0, times):
-        aidata = load()
-        play(aidata, statdata)
-        dump(aidata)
+#        try:
+#            aidata = load()
+            play(aidata, statdata)
+            bar.update(a)            
+#            dump(aidata)
+#        except:
+#            handleError()
 
-    printStats(b)
+    printStats(statdata)
     #printAIData(aidata)
     dump(aidata)
 
