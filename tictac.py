@@ -512,6 +512,8 @@ def handleGameOverPlayer(a, b, c, d, e):
 
 
 def handleGameOverComputer(a, b, c, d, e):
+    printGameGrids(c[:-1][d-1::2])
+    printGameGrids(c[:-1][3-d::2])
     adjustAI(a, b, c, d, e)
 
 
