@@ -1,4 +1,4 @@
-times = 200
+times = 2
 
 from tictac import *
 
@@ -10,15 +10,15 @@ class ProgressBar:
     def __init__(self, max):
         self.max = max
         self.number = 0
+        print
         self.display()
-        print "\n\t[" + " " * (100) + "]",
     def update(self, current):
-        number = (current * 100) / self.max
+        number = (current * 100) / self.max + 1
         if number != self.number:
             self.number = number
             self.display()
-        if self.max - current <= 1:
-            print
+        if self.number == 100:
+            print 
     def display(self):
         print "\r\t[" + "*" * self.number + " " * (100 - self.number) + "] %2i%%" % (self.number),
     
@@ -77,12 +77,12 @@ if __name__ == '__main__':
     #printAIData(aidata)
     statdata = [0, 0, 0, []]
     aidata = load()
-    bar = ProgressBar(times)
+    #bar = ProgressBar(times)
     for a in range(0, times):
 #        try:
 #            aidata = load()
             play(aidata, statdata)
-            bar.update(a)            
+            #bar.update(a)            
 #            dump(aidata)
 #        except:
 #            handleError()

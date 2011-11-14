@@ -22,7 +22,8 @@ RECORD = 1              # Toggle Saving Data
 STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
-AIADJUST = {'win': 6, 'lose': -3, 'draw': -1, 'last': 1}
+AIADJUST = [{'win': 6, 'lose': -3, 'draw': -1, 'last': 1},
+            {'win': 6, 'lose': -3, 'draw': -1, 'last': 1}]
 USEDSPACE = -4      # This is used to adjust values for used spaces in grids
 AICOUNT = 50        # Number of times to try and not pick a used move
 USENUMBERPAD = 0    # Option for tubbs
@@ -247,7 +248,9 @@ def getInitialValues(a):
 # * Game Over Function  * <-- Add to Grid?
 # * * * * * * * * * * * *
 def gameOver(a):
-    if a[0] == a[1] == a[2] and a[0] != 0:
+    if sum(a) >= 13:
+        return (-1, 0)
+    elif a[0] == a[1] == a[2] and a[0] != 0:
         return (a[0], 1)
     elif a[3] == a[4] == a[5] and a[3] != 0:
         return (a[3], 2)
@@ -265,8 +268,6 @@ def gameOver(a):
         return (a[0], 7)
     elif a[6] == a[4] == a[2] and a[2] != 0:
         return (a[6], 8)
-    elif sum(a) >= 13:
-        return (-1, 0)
     else:
         return (0, 0)
 
@@ -482,31 +483,31 @@ def pickOne(a):
 # * Player Finalization Handlers  *
 # * * * * * * * * * * * * * * * * *
 def handleGameOver(a, b, c, d, e):
-    if d == 2:
-        handleGameOverPlayer(a, d, c, e)
-    elif d == 1:
+    if d == b:
+        handleGameOverPlayer(a, b, c, d, e)
+    elif d != b:
         handleGameOverComputer(a, b, c, d, e)
     else:
         a = "Player not 1 or 2" + str(d)
         raise ValueError(a)
 
 
-def handleGameOverPlayer(a, b, c, d):
-    if a == b:
-        print "You won! computer lost"
-    elif a == -1:
+def handleGameOverPlayer(a, b, c, d, e):
+    if a == -1:
         print "You tied!"
-    elif a == [2, 1][b - 1]:
+    elif (a == d):
+        print "You won! computer lost"
+    elif (a != d):
         print "You lost, computer won"
     else:
-        print "Winner not -1, 1, or 2\n\tWinner: ", winner
-        raise IndexError
+        print "Winner not -1, 1, or 2"
+#        raise IndexError
     printGameGrids(c)
     h = []
-    for e in c:
-        f = translateFindMax(e[0])
-        g = translateGridReverse(e[0], f)
-        h.append(d[g] if (g in d) else Grid())
+    for i in c:
+        f = translateFindMax(i[0])
+        g = translateGridReverse(i[0], f)
+        h.append(e[g] if (g in e) else Grid())
     printGrids(h)
 
 
@@ -514,39 +515,35 @@ def handleGameOverComputer(a, b, c, d, e):
     adjustAI(a, b, c, d, e)
 
 
-def quantifyResult(a, b):
+def quantifyResult(a, b, c):
     if a == -1:  # draw
-        c = AIADJUST['draw']
-        if DEBUG:
-            print "a: ", a, " draw"
-    elif a == b:  # win
-        c = AIADJUST['win']
-        if DEBUG:
-            print "a: ", a, " win"
+        return AIADJUST[b - 1]['draw']
+    elif (a == c):  # win
+        print "AI win! a: %i, b: %i, c: %i" % (a, b, c)
+        return AIADJUST[b - 1]['win']
     else:  # loss
-        c = AIADJUST['lose']
-        if DEBUG:
-            print "a: ", a, " lose"
-    return c
+        print "AI loss :( a: %i, b: %i, c: %i" % (a, b, c)
+        return AIADJUST[b - 1]['lose']
 
 
-def adjustAI(a, b, c, j, aidata):
+def adjustAI(winner, startingplayer, gamegrids, index, aidata):
     DEBUGFUNC = 0
-    assert gameOver(c.pop()[0])[0] != 0
-    k = quantifyResult(a, j)
-    if b != j:
+    printGameGrids(gamegrids)
+    assert gameOver(gamegrids.pop()[0])[0] != 0
+    k = quantifyResult(winner, startingplayer, index)
+    if startingplayer != index:
         if DEBUG or DEBUGFUNC:
-            print "encountered b = ", b, " should be ", j
-        c.pop()
-    while len(c) >= 2:
-        d, e, g = c.pop()  # AI move
+            print "encountered startingplayer = ", startingplayer, " should be ", index
+        gamegrids.pop()
+    while len(gamegrids) >= 2:
+        d, e, g = gamegrids.pop()  # AI move
         if DEBUG or DEBUGFUNC:
-                print "d, e, g, j", d, e, g, j
+                print "d, e, g, index", d, e, g, index
                 printXO(d)
-        if g != j:
-            d, e, g = c.pop()
+        if g != index:
+            d, e, g = gamegrids.pop()
             if DEBUG or DEBUGFUNC:
-                print "again d, e, g, j: ", d, ',',  e, ',', g, ',', j
+                print "again d, e, g, index: ", d, ',',  e, ',', g, ',', index
                 printXO(d)
         i, h = translateGridMax(d)
         if i in aidata:
@@ -555,22 +552,25 @@ def adjustAI(a, b, c, j, aidata):
             f = aidata[i]
             m = translateGridReverse(f, h)
         else:
-            if DEBUG or DEBUGFUNC:
-                print i, aidata
+            if DEBUG or DEBUGFUNC or 1:
+                #print i, aidata
+                printXO(Grid(i))
+                printGrids(aidata.keys())
+                printGameGrids([(a, 0) for a in aidata.keys()])
             raise Exception("i not in data")
-        if len(c) > 2:
-            l = AIADJUST['last']
+        if len(gamegrids) > 2:
+            l = AIADJUST[startingplayer - 1]['last']
         else:
             l = 1
         m[e] += k * l
         f = translateGrid(m, h)
         aidata[d] = f
         if DEBUG or DEBUGFUNC:
-            print "AI win\n\t A (winner): ", a,
-            print "\n\t B (starting player): ", b,
-            print "\n\t C (gamegrids): ", c, "\n\t D (grid): ", d,
+            print "AI win\n\t winner: ", winner,
+            print "\n\t starting player: ", startingplayer,
+            print "\n\t gamegrids: ", gamegrids, "\n\t D (grid): ", d,
             print "\n\t E (move): ", e, "\n\t F (scores): ", f,
-            print "\n\t j (index): ", j, "\n\t f[e] (score): ", f[e],
+            print "\n\t index: ", index, "\n\t f[e] (score): ", f[e],
             print "\n\t l*k (change): ", l * k, "\n\t aidata[d]: ", aidata[d]
 
 
