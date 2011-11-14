@@ -18,13 +18,13 @@ from UserList import UserList
 # * * * * * * * * * * *
 DEBUG = 0               # Choose: 0 or 1
 DISPLAYSTATS = 1
-RECORD = 1              # Toggle Saving Data
+RECORD = 0              # Toggle Saving Data
 STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
-AIADJUST = [{'win': 6, 'lose': -3, 'draw': -1, 'last': 1},
-            {'win': 6, 'lose': -3, 'draw': -1, 'last': 1}]
-USEDSPACE = -4      # This is used to adjust values for used spaces in grids
+AIADJUST = [{'win': 1, 'lose': -1, 'draw': 0, 'last': 1},
+            {'win': 1, 'lose': -1, 'draw': 0, 'last': 1}]
+USEDSPACE = -1      # This is used to adjust values for used spaces in grids
 AICOUNT = 50        # Number of times to try and not pick a used move
 USENUMBERPAD = 0    # Option for tubbs
 
@@ -512,9 +512,10 @@ def handleGameOverPlayer(a, b, c, d, e):
 
 
 def handleGameOverComputer(a, b, c, d, e):
-    printGameGrids(c[:-1][d-1::2])
-    printGameGrids(c[:-1][3-d::2])
-    adjustAI(a, b, c, d, e)
+    #print d, d-1, 2-d
+    #printGameGrids(c[:-1][d-1::2])
+    #printGameGrids(c[:-1][2-d::2])
+    adjustAI(a, b, c[:-1][2-d::2], d, e)
 
 
 def quantifyResult(a, b, c):
@@ -531,21 +532,16 @@ def quantifyResult(a, b, c):
 def adjustAI(winner, startingplayer, gamegrids, index, aidata):
     DEBUGFUNC = 0
     printGameGrids(gamegrids)
-    assert gameOver(gamegrids.pop()[0])[0] != 0
+    #assert gameOver(gamegrids.pop()[0])[0] != 0
     k = quantifyResult(winner, startingplayer, index)
     if startingplayer != index:
         if DEBUG or DEBUGFUNC:
             print "encountered startingplayer = ", startingplayer, " should be ", index
         gamegrids.pop()
-    while len(gamegrids) >= 2:
+    while len(gamegrids) >= 1:
         d, e, g = gamegrids.pop()  # AI move
         if DEBUG or DEBUGFUNC:
                 print "d, e, g, index", d, e, g, index
-                printXO(d)
-        if g != index:
-            d, e, g = gamegrids.pop()
-            if DEBUG or DEBUGFUNC:
-                print "again d, e, g, index: ", d, ',',  e, ',', g, ',', index
                 printXO(d)
         i, h = translateGridMax(d)
         if i in aidata:
@@ -554,7 +550,7 @@ def adjustAI(winner, startingplayer, gamegrids, index, aidata):
             f = aidata[i]
             m = translateGridReverse(f, h)
         else:
-            if DEBUG or DEBUGFUNC or 1:
+            if DEBUG or DEBUGFUNC:
                 #print i, aidata
                 printXO(Grid(i))
                 printGrids(aidata.keys())
