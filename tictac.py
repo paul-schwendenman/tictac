@@ -18,13 +18,13 @@ from UserList import UserList
 # * * * * * * * * * * *
 DEBUG = 0               # Choose: 0 or 1
 DISPLAYSTATS = 1
-RECORD = 0              # Toggle Saving Data
+RECORD = 1              # Toggle Saving Data
 STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
-AIADJUST = [{'win': 1, 'lose': -1, 'draw': 0, 'last': 1},
-            {'win': 1, 'lose': -1, 'draw': 0, 'last': 1}]
-USEDSPACE = -1      # This is used to adjust values for used spaces in grids
+AIADJUST = [{'win': 2, 'lose': -1, 'draw': 1, 'last': 1},
+            {'win': 2, 'lose': -1, 'draw': 1, 'last': 1}]
+USEDSPACE = -5      # This is used to adjust values for used spaces in grids
 AICOUNT = 50        # Number of times to try and not pick a used move
 USENUMBERPAD = 0    # Option for tubbs
 
@@ -73,6 +73,12 @@ class Grid(UserList):
         #return int(self.__str__())
         return translateHash(self)
 
+
+# * * * * * * * *
+# * UserError   *
+# * * * * * * * *
+class UserError(Exception):
+    pass
 
 # * * * * * * * * * * * * * *
 # * Grid Display Functions  *
@@ -162,16 +168,28 @@ def printGameGrids(a, e=None):
     print
     print
 
+def printGameGridsValues(gamegrids, aidata):
+    '''
+    
+    '''
+    h = []
+    for i in gamegrids:
+        f = translateFindMax(i[0])
+        g = translateGrid(i[0], f)
+        #print i , g, f
+        h.append(translateGridReverse(aidata[g], f) if (g in aidata) else Grid([''] * 9))
+    printGrids(h)
+
 
 def printGrids(a):
     for c in a:
-        print "%2i%2i%2i%c" % (c[0], c[1], c[2], "|"),
+        print "%2s%2s%2s%c" % (c[0], c[1], c[2], "|"),
     print
     for c in a:
-        print "%2i%2i%2i%c" % (c[3], c[4], c[5], "|"),
+        print "%2s%2s%2s%c" % (c[3], c[4], c[5], "|"),
     print
     for c in a:
-        print "%2i%2i%2i%c" % (c[6], c[7], c[8], "|"),
+        print "%2s%2s%2s%c" % (c[6], c[7], c[8], "|"),
     print
     print
 
@@ -195,7 +213,7 @@ def convertNumberToGrid(a):
     '''
     Turns a hash into a list.
     '''
-    b = []  # Make this use Grid()?
+    b = []  # Make this  use Grid()?
     for c in str(a):
         b.append(int(c))
     return b
@@ -248,9 +266,7 @@ def getInitialValues(a):
 # * Game Over Function  * <-- Add to Grid?
 # * * * * * * * * * * * *
 def gameOver(a):
-    if sum(a) >= 13:
-        return (-1, 0)
-    elif a[0] == a[1] == a[2] and a[0] != 0:
+    if a[0] == a[1] == a[2] and a[0] != 0:
         return (a[0], 1)
     elif a[3] == a[4] == a[5] and a[3] != 0:
         return (a[3], 2)
@@ -268,6 +284,8 @@ def gameOver(a):
         return (a[0], 7)
     elif a[6] == a[4] == a[2] and a[2] != 0:
         return (a[6], 8)
+    elif sum(a) >= 13:
+        return (-1, 0)
     else:
         return (0, 0)
 
@@ -421,16 +439,19 @@ def getMove(n, a, aidata, c=None):
 
 def getMovePlayer(a, c):
     printXO(a)
-    if c != None:
-        print "Invalid Move: ", c + 1
-    b = raw_input("Move? ")[0]
-    if b == "h" or b == "H":
-        printHelp()
-    if USENUMBERPAD:
-        return {7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: 8}[int(b)]
-    else:
-        return int(b) - 1
-
+    try:
+        if c != None:
+            print "Invalid Move: ", c + 1
+        b = raw_input("Move? ")[0]
+        if b == "h" or b == "H":
+            printHelp()
+            b = -1
+        if USENUMBERPAD:
+            return {-1: -1, 7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: 8}[int(b)]
+        else:
+            return int(b) - 1
+    except (ValueError, IndexError, KeyError, EOFError, KeyboardInterrupt):
+        raise UserError("User Quit")
 
 def getMoveComputer(a, c, aidata):
     # Make getMove handle errors
@@ -501,18 +522,12 @@ def handleGameOverPlayer(a, b, c, d, e):
         print "You lost, computer won"
     else:
         print "Winner not -1, 1, or 2"
-#        raise IndexError
-    printGameGrids(c)
-    h = []
-    for i in c:
-        f = translateFindMax(i[0])
-        g = translateGridReverse(i[0], f)
-        h.append(e[g] if (g in e) else Grid())
-    printGrids(h)
+        raise IndexError
+#    printGameGrids(c)
+#    printGameGridsValues(c, e)
 
 
 def handleGameOverComputer(a, b, c, d, e):
-    #print d, d-1, 2-d
     #printGameGrids(c[:-1][d-1::2])
     #printGameGrids(c[:-1][2-d::2])
     adjustAI(a, b, c[:-1][2-d::2], d, e)
@@ -522,54 +537,54 @@ def quantifyResult(a, b, c):
     if a == -1:  # draw
         return AIADJUST[b - 1]['draw']
     elif (a == c):  # win
-        print "AI win! a: %i, b: %i, c: %i" % (a, b, c)
+        if DEBUG:
+            print "AI win! a: %i, b: %i, c: %i" % (a, b, c)
         return AIADJUST[b - 1]['win']
     else:  # loss
-        print "AI loss :( a: %i, b: %i, c: %i" % (a, b, c)
+        if DEBUG:
+            print "AI loss :( a: %i, b: %i, c: %i" % (a, b, c)
         return AIADJUST[b - 1]['lose']
 
 
 def adjustAI(winner, startingplayer, gamegrids, index, aidata):
     DEBUGFUNC = 0
-    printGameGrids(gamegrids)
     #assert gameOver(gamegrids.pop()[0])[0] != 0
     k = quantifyResult(winner, startingplayer, index)
-    if startingplayer != index:
+    if DEBUG or DEBUGFUNC:        
+        printGameGrids(gamegrids)
+    while len(gamegrids) > 0:
+        grid, move, g = gamegrids.pop()  # AI move
         if DEBUG or DEBUGFUNC:
-            print "encountered startingplayer = ", startingplayer, " should be ", index
-        gamegrids.pop()
-    while len(gamegrids) >= 1:
-        d, e, g = gamegrids.pop()  # AI move
-        if DEBUG or DEBUGFUNC:
-                print "d, e, g, index", d, e, g, index
-                printXO(d)
-        i, h = translateGridMax(d)
-        if i in aidata:
-            if DEBUG or DEBUGFUNC:
-                print "in"
-            f = aidata[i]
-            m = translateGridReverse(f, h)
+                print "grid, move, g, index", grid, move, g, index
+                printXO(grid)
+        maxgrid, translation = translateGridMax(grid)
+        if maxgrid in aidata:
+            scores = aidata[maxgrid]
+            translatedscores = translateGridReverse(scores, translation)
         else:
-            if DEBUG or DEBUGFUNC:
-                #print i, aidata
-                printXO(Grid(i))
-                printGrids(aidata.keys())
-                printGameGrids([(a, 0) for a in aidata.keys()])
-            raise Exception("i not in data")
+            raise Exception("newgrid not in data")
         if len(gamegrids) > 2:
             l = AIADJUST[startingplayer - 1]['last']
         else:
             l = 1
-        m[e] += k * l
-        f = translateGrid(m, h)
-        aidata[d] = f
+        
+        translatedscores[move] += k * l
+        adjustedscores = translateGrid(translatedscores, translation)
+        aidata[maxgrid] = adjustedscores
+        if DEBUG or DEBUGFUNC:        
+            print "*" * 30
+            printEighteen(maxgrid.returnXO(), translatedscores)
+            printEighteen(grid.returnXO(), scores)
+            printEighteen(grid.returnXO(), adjustedscores)
         if DEBUG or DEBUGFUNC:
             print "AI win\n\t winner: ", winner,
             print "\n\t starting player: ", startingplayer,
-            print "\n\t gamegrids: ", gamegrids, "\n\t D (grid): ", d,
-            print "\n\t E (move): ", e, "\n\t F (scores): ", f,
-            print "\n\t index: ", index, "\n\t f[e] (score): ", f[e],
-            print "\n\t l*k (change): ", l * k, "\n\t aidata[d]: ", aidata[d]
+            print "\n\t gamegrids: ", gamegrids, "\n\t grid: ", grid,
+            print "\n\t move: ", move, "\n\t scores: ", scores,
+            print "\n\t adjustedscores: ", adjustedscores,
+            print "\n\t index: ", index, "\n\t scores[move]: ", scores[move],
+            print "\n\t l*k (change): ", l * k, 
+            print "\n\t aidata[grid]: ", aidata[maxgrid]
 
 
 # * * * * * * * * * * * * *
@@ -688,8 +703,11 @@ def play(aidata, statdata):
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     printXO(grid)
+    printGameGrids(gamegrids)
+    printGameGridsValues(gamegrids, aidata)
     for index in range(1, 3):
         handleGameOver(winner, startingplayer, gamegrids[:], index, aidata)
+    printGameGridsValues(gamegrids, aidata)
 
 
 def main():
@@ -713,13 +731,14 @@ def main():
         while 1:  # a == 'y' or a == 'Y':
             play(aidata, statdata)
             # a = raw_input("Play again? ")[0]
-    except (ValueError, IndexError, EOFError, KeyboardInterrupt):
+    except UserError:
+        print "User quit."
         if DEBUG or DEBUGFUNC:
-            print "Caught Error: User quit?"
+            handleError()
+    except:
         handleError()
     if DISPLAYSTATS:
         printStats(statdata)
-    print "\t aidata: ", len(aidata)
     if RECORD:
         dump(aidata)
 if __name__ == "__main__":

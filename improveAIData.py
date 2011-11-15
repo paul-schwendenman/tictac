@@ -1,6 +1,18 @@
-times = 2
+times = 1000
+
+# * * * * * *
+# * Imports *
+# * * * * * *
 
 from tictac import *
+
+
+# * * * * * *
+# * Globals *
+# * * * * * *
+
+RECORD = 1
+PROGRESSBAR = 1
 
 # * * * * * * * * *
 # * New Functions *
@@ -17,10 +29,10 @@ class ProgressBar:
         if number != self.number:
             self.number = number
             self.display()
-        if self.number == 100:
+        if current == self.max - 1:
             print 
     def display(self):
-        print "\r\t[" + "*" * self.number + " " * (100 - self.number) + "] %2i%%" % (self.number),
+        print "\r[" + "*" * self.number + " " * (100 - self.number) + "] %2i%%" % (self.number),
     
 
 # * * * * * * * * * * * *
@@ -39,7 +51,6 @@ def getMove(n, a, aidata, c=None):
         b = getMove(n, a, aidata, b)
         if b not in a.getEmptySpaces():
             raise ValueError
-                
     return b
 
 
@@ -67,27 +78,36 @@ def play(aidata, statdata):
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     #printXO(grid)
-    #printGameGrids(gamegrids, grid)
+    #printGameGrids(gamegrids)
+    #printGameGridsValues(gamegrids, aidata)
+    #copy = dict([(key, aidata[key]) for key in aidata.keys()])
     for index in [1, 2]:
         handleGameOver(winner, startingplayer, gamegrids[:], index, aidata)
+    #printGameGridsValues(gamegrids, copy)
+    #printGameGridsValues(gamegrids, aidata)
 
 DEBUG = 0
 
 if __name__ == '__main__':
     #printAIData(aidata)
     statdata = [0, 0, 0, []]
-    aidata = load()
-    #bar = ProgressBar(times)
+    aidata = {}
+    if RECORD:
+        aidata = load()
+    print "\t\t\t\tRunning %i games" % (times)
+    if PROGRESSBAR:
+        bar = ProgressBar(times)
     for a in range(0, times):
 #        try:
 #            aidata = load()
             play(aidata, statdata)
-            #bar.update(a)            
+            if PROGRESSBAR:
+                bar.update(a)            
 #            dump(aidata)
 #        except:
 #            handleError()
-
     printStats(statdata)
     #printAIData(aidata)
-    dump(aidata)
+    if RECORD:
+        dump(aidata)
 
