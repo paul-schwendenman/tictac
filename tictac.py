@@ -22,8 +22,8 @@ RECORD = 1              # Toggle Saving Data
 STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
-AIADJUST = [{'win': 2, 'lose': -1, 'draw': 1, 'last': 1},
-            {'win': 2, 'lose': -1, 'draw': 1, 'last': 1}]
+AIADJUST = [{'win': 1, 'lose': -2, 'draw': -1, 'last': 1},
+            {'win': 2, 'lose': -2, 'draw': 1, 'last': 1}]
 USEDSPACE = -5      # This is used to adjust values for used spaces in grids
 AICOUNT = 50        # Number of times to try and not pick a used move
 USENUMBERPAD = 0    # Option for tubbs
@@ -535,15 +535,15 @@ def handleGameOverComputer(a, b, c, d, e):
 
 def quantifyResult(a, b, c):
     if a == -1:  # draw
-        return AIADJUST[b - 1]['draw']
+        return AIADJUST[c - 1]['draw']
     elif (a == c):  # win
         if DEBUG:
             print "AI win! a: %i, b: %i, c: %i" % (a, b, c)
-        return AIADJUST[b - 1]['win']
+        return AIADJUST[c - 1]['win']
     else:  # loss
         if DEBUG:
             print "AI loss :( a: %i, b: %i, c: %i" % (a, b, c)
-        return AIADJUST[b - 1]['lose']
+        return AIADJUST[c - 1]['lose']
 
 
 def adjustAI(winner, startingplayer, gamegrids, index, aidata):
@@ -606,18 +606,18 @@ def printStats(a):
     e = a[3]
     f = b + c + d
     if f > 0:
-        print "Success for O",
-        print "\n\twins: ", c, (c * 100.) / f,
-        print "%\n\tloses: ", b, (b * 100.) / f,
-        print "%\n\tties: ", d, (d * 100.) / f, "%"
+        print "Success for O"
+        print "\twins:\t%i\t%f%%" % (c, (c * 100.) / f)
+        print "\tloses:\t%i\t%f%%" % (b, (b * 100.) / f)
+        print "\tties:\t%i\t%f%%" % (d, (d * 100.) / f)
         b = e.count(1)
         c = e.count(2)
         d = e.count(-1)
         f = b + c + d
-        print "Last %i games:" % (NUMBERLASTGAMES),
-        print "\n\twins: ", c, (c * 100.) / f,
-        print "%\n\tloses: ", b, (b * 100.) / f,
-        print "%\n\tties: ", d, (d * 100.) / f, "%"
+        print "Last %i games:" % (NUMBERLASTGAMES)
+        print "\twins:\t%i\t%f%%" % (c, (c * 100.) / f)
+        print "\tloses:\t%i\t%f%%" % (b, (b * 100.) / f)
+        print "\tties:\t%i\t%f%%" % (d, (d * 100.) / f)
 
 
 def analyzeStats(a, b):
@@ -703,11 +703,11 @@ def play(aidata, statdata):
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     printXO(grid)
-    printGameGrids(gamegrids)
-    printGameGridsValues(gamegrids, aidata)
+    #printGameGrids(gamegrids)
+    #printGameGridsValues(gamegrids, aidata)
     for index in range(1, 3):
         handleGameOver(winner, startingplayer, gamegrids[:], index, aidata)
-    printGameGridsValues(gamegrids, aidata)
+    #printGameGridsValues(gamegrids, aidata)
 
 
 def main():

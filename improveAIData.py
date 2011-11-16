@@ -1,4 +1,4 @@
-times = 1000
+times = 3000
 
 # * * * * * *
 # * Imports *
@@ -97,15 +97,16 @@ if __name__ == '__main__':
     print "\t\t\t\tRunning %i games" % (times)
     if PROGRESSBAR:
         bar = ProgressBar(times)
-    for a in range(0, times):
-#        try:
-#            aidata = load()
-            play(aidata, statdata)
-            if PROGRESSBAR:
-                bar.update(a)            
-#            dump(aidata)
-#        except:
-#            handleError()
+    try:
+        for a in range(0, times):
+                play(aidata, statdata)
+                if PROGRESSBAR:
+                    bar.update(a)            
+    except KeyboardInterrupt:
+        print
+    except:
+        print
+        handleError()
     printStats(statdata)
     #printAIData(aidata)
     if RECORD:
