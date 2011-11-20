@@ -10,7 +10,7 @@
 # * * * * * * *
 # * Imported  *
 # * * * * * * *
-import pickle
+import pickle as pack
 from UserList import UserList
 
 # * * * * * * * * * * *
@@ -79,6 +79,7 @@ class Grid(UserList):
 # * * * * * * * *
 class UserError(Exception):
     pass
+
 
 # * * * * * * * * * * * * * *
 # * Grid Display Functions  *
@@ -168,16 +169,18 @@ def printGameGrids(a, e=None):
     print
     print
 
+
 def printGameGridsValues(gamegrids, aidata):
     '''
-    
+    Print the value for each grid in gamegrids based on aidata.
     '''
     h = []
     for i in gamegrids:
         f = translateFindMax(i[0])
         g = translateGrid(i[0], f)
         #print i , g, f
-        h.append(translateGridReverse(aidata[g], f) if (g in aidata) else Grid([''] * 9))
+        h.append(translateGridReverse(aidata[g], f)
+                 if (g in aidata) else Grid([''] * 9))
     printGrids(h)
 
 
@@ -447,11 +450,13 @@ def getMovePlayer(a, c):
             printHelp()
             b = -1
         if USENUMBERPAD:
-            return {-1: -1, 7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: 8}[int(b)]
+            return {-1: -1, 7: 0, 8: 1, 9: 2, 4: 3,
+                     5: 4, 6: 5, 1: 6, 2: 7, 3: 8}[int(b)]
         else:
             return int(b) - 1
     except (ValueError, IndexError, KeyError, EOFError, KeyboardInterrupt):
         raise UserError("User Quit")
+
 
 def getMoveComputer(a, c, aidata):
     # Make getMove handle errors
@@ -530,7 +535,7 @@ def handleGameOverPlayer(a, b, c, d, e):
 def handleGameOverComputer(a, b, c, d, e):
     #printGameGrids(c[:-1][d-1::2])
     #printGameGrids(c[:-1][2-d::2])
-    adjustAI(a, b, c[:-1][2-d::2], d, e)
+    adjustAI(a, b, c[: -1][2 - d:: 2], d, e)
 
 
 def quantifyResult(a, b, c):
@@ -550,7 +555,7 @@ def adjustAI(winner, startingplayer, gamegrids, index, aidata):
     DEBUGFUNC = 0
     #assert gameOver(gamegrids.pop()[0])[0] != 0
     k = quantifyResult(winner, startingplayer, index)
-    if DEBUG or DEBUGFUNC:        
+    if DEBUG or DEBUGFUNC:
         printGameGrids(gamegrids)
     while len(gamegrids) > 0:
         grid, move, g = gamegrids.pop()  # AI move
@@ -567,11 +572,11 @@ def adjustAI(winner, startingplayer, gamegrids, index, aidata):
             l = AIADJUST[startingplayer - 1]['last']
         else:
             l = 1
-        
+
         translatedscores[move] += k * l
         adjustedscores = translateGrid(translatedscores, translation)
         aidata[maxgrid] = adjustedscores
-        if DEBUG or DEBUGFUNC:        
+        if DEBUG or DEBUGFUNC:
             print "*" * 30
             printEighteen(maxgrid.returnXO(), translatedscores)
             printEighteen(grid.returnXO(), scores)
@@ -583,7 +588,7 @@ def adjustAI(winner, startingplayer, gamegrids, index, aidata):
             print "\n\t move: ", move, "\n\t scores: ", scores,
             print "\n\t adjustedscores: ", adjustedscores,
             print "\n\t index: ", index, "\n\t scores[move]: ", scores[move],
-            print "\n\t l*k (change): ", l * k, 
+            print "\n\t l*k (change): ", l * k,
             print "\n\t aidata[grid]: ", aidata[maxgrid]
 
 
@@ -640,7 +645,7 @@ def load():
     DEBUGFUNC = 1
     try:
         a = open(FILENAME)
-        c = pickle.load(a)
+        c = pack.load(a)
         a.close()
     except IOError:
         if DEBUG or DEBUGFUNC:
@@ -654,7 +659,7 @@ def load():
 def dump(a):
     DEBUGFUNC = 1
     b = open(FILENAME, "w")
-    pickle.dump(a, b)
+    pack.dump(a, b)
     if DEBUG or DEBUGFUNC:
         print "aidata has %i items" % (len(a))
     b.close()
