@@ -1,10 +1,11 @@
-times = 1000
+times = 100000
 
 # * * * * * *
 # * Imports *
 # * * * * * *
 
 from tictac import *
+from multiprocessing import Pool
 
 
 # * * * * * *
@@ -92,6 +93,7 @@ if __name__ == '__main__':
     #printAIData(aidata)
     statdata = [0, 0, 0, []]
     aidata = {}
+    pool = Pool(5)
     if RECORD:
         aidata = load()
     print "\t\t\t\tRunning %i games" % (times)
@@ -99,7 +101,9 @@ if __name__ == '__main__':
         bar = ProgressBar(times)
     try:
         for a in range(0, times):
-                play(aidata, statdata)
+                pool.apply_async(play, [aidata, statdata])
+
+                #play(aidata, statdata)
                 if PROGRESSBAR:
                     bar.update(a)            
     except KeyboardInterrupt:
@@ -112,3 +116,8 @@ if __name__ == '__main__':
     if RECORD:
         dump(aidata)
 
+    import time
+    time.sleep(3)
+    pool.close()
+    pool.terminate()    
+    pool.join()
