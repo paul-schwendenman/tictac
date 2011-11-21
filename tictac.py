@@ -53,7 +53,12 @@ class Grid(UserList):
         return a
 
     def toString(self):
-        return ':'.join([str(a) for a in self.data])
+        def pick(a, b):
+            if a > b:
+                return b
+            else:
+                return a
+        return ':'.join([("      "  + str(a))[pick(-4, -len(str(a))):] for a in self.data])
 
     def fromString(self, a):
         self.data = [int(b) for b in a.split(':')]
@@ -641,7 +646,7 @@ def analyzeStats(a, b):
 # * * * * * * * * * * * * * *
 # * File Control Functions  *
 # * * * * * * * * * * * * * *
-def load():
+def loadPickle():
     DEBUGFUNC = 1
     try:
         a = open(FILENAME)
@@ -656,13 +661,53 @@ def load():
     return c
 
 
-def dump(a):
+def load():
+    DEBUGFUNC = 1
+    aidata = {}
+    try:
+        file = open(FILENAME)
+        lines = file.readlines()
+        for line in lines:
+            line = line[:-1].split("\t")
+            grid = Grid()
+            value = Grid()
+            grid.fromString(line[0])
+            value.fromString(line[1])
+            aidata[grid] = value
+        file.close()
+    except IOError:
+        if DEBUG or DEBUGFUNC:
+            print "File doesn't exist? IO Error, line 287"
+        aidata = {}
+    except:
+        handleError
+        try:
+            file.close()
+            aidata = loadPickle()
+        except:
+            pass
+    if DEBUG or DEBUGFUNC:
+        print "aidata has %i items" % (len(aidata))
+    return aidata
+
+
+def dumpPickle(a):
     DEBUGFUNC = 1
     b = open(FILENAME, "w")
     pack.dump(a, b)
     if DEBUG or DEBUGFUNC:
         print "aidata has %i items" % (len(a))
     b.close()
+
+
+def dump(aidata):
+    DEBUGFUNC = 1
+    file = open(FILENAME, "w")
+    for grid, value in aidata.iteritems():
+        file.write(grid.toString() + "\t" + value.toString() + "\n")
+    if DEBUG or DEBUGFUNC:
+        print "aidata has %i items" % (len(aidata))
+    file.close()
 
 
 # * * * * * * * * * *

@@ -1,4 +1,4 @@
-times = 3000
+times = 10
 
 # * * * * * *
 # * Imports *
