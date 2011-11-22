@@ -5,7 +5,7 @@ times = 1000
 # * * * * * *
 
 from tictac import *
-
+from ProgressBar import ProgressBar
 
 # * * * * * *
 # * Globals *
@@ -17,23 +17,6 @@ PROGRESSBAR = 1
 # * * * * * * * * *
 # * New Functions *
 # * * * * * * * * *
-
-class ProgressBar:
-    def __init__(self, max):
-        self.max = max
-        self.number = 0
-        print
-        self.display()
-    def update(self, current):
-        number = (current * 100) / self.max + 1
-        if number != self.number:
-            self.number = number
-            self.display()
-        if current == self.max - 1:
-            print 
-    def display(self):
-        print "\r[" + "*" * self.number + " " * (100 - self.number) + "] %2i%%" % (self.number),
-    
 
 # * * * * * * * * * * * *
 # * Modified Functions  *
@@ -85,6 +68,7 @@ def play(aidata, statdata):
         handleGameOver(winner, startingplayer, gamegrids[:], index, aidata)
     #printGameGridsValues(gamegrids, copy)
     #printGameGridsValues(gamegrids, aidata)
+    return aidata
 
 DEBUG = 0
 
@@ -96,16 +80,23 @@ if __name__ == '__main__':
         aidata = load()
     print "\t\t\t\tRunning %i games" % (times)
     if PROGRESSBAR:
-        bar = ProgressBar(times)
+        bar = ProgressBar(times, 50)
+        #bar.setNewline()
     try:
         for a in range(0, times):
                 play(aidata, statdata)
                 if PROGRESSBAR:
                     bar.update(a)            
+        if PROGRESSBAR:
+            bar.success()
+            del bar
     except KeyboardInterrupt:
-        print
+        if PROGRESSBAR:
+            del bar
+        handleError()
     except:
-        print
+        if PROGRESSBAR:
+            del bar
         handleError()
     printStats(statdata)
     #printAIData(aidata)

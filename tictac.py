@@ -703,8 +703,9 @@ def dumpPickle(a):
 def dump(aidata):
     DEBUGFUNC = 1
     file = open(FILENAME, "w")
-    for grid, value in aidata.iteritems():
-        file.write(grid.toString() + "\t" + value.toString() + "\n")
+    grids = sorted(aidata.keys())
+    for grid in grids:
+        file.write(grid.toString() + "\t" + aidata[grid].toString() + "\n")
     if DEBUG or DEBUGFUNC:
         print "aidata has %i items" % (len(aidata))
     file.close()
@@ -728,7 +729,7 @@ def handleError():
         else:
             line.append(tb.tb_lineno)
             tb = tb.tb_next
-    print "\t", sys.exc_info()[0], sys.exc_info()[1],
+    print "\t", __name__, sys.exc_info()[0], sys.exc_info()[1],
     print "\n\t line no: ", line[-1], "\n\t traceback: ", line
 
 
