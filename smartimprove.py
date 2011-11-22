@@ -1,17 +1,17 @@
-times = 100000
 
 # * * * * * *
 # * Imports *
 # * * * * * *
 
 from improveAIData import *
-from multiprocessing import Pool
+from multiprocessing import Pool, Queue
 
 
 # * * * * * *
 # * Globals *
 # * * * * * *
 
+times = 50
 RECORD = 1
 PROGRESSBAR = 1
 
@@ -19,9 +19,41 @@ PROGRESSBAR = 1
 # * New Functions *
 # * * * * * * * * *
 
+def worker(q, aidata, statdata):
+    data = play(aidata, statdata)
+    q.put(data)
+
 # * * * * * * * * * * * *
 # * Modified Functions  *
 # * * * * * * * * * * * *
+
+def play(aidata, statdata):
+    grid = Grid()
+    startingplayer = 1
+    winner = 0
+    gamegrids = []
+
+    player = startingplayer
+    while winner == 0:
+        move = getMove(player, grid, aidata)
+        gamegrids.append((grid[:], move, player))
+        grid[move] = player
+        player = swapPlayer(player)        
+        winner, row = gameOver(grid)
+    
+    gamegrids.append((grid[:], move, player))
+    analyzeStats(winner, statdata)
+    #printXO(grid)
+    #printGameGrids(gamegrids)
+    #printGameGridsValues(gamegrids, aidata)
+    #copy = dict([(key, aidata[key]) for key in aidata.keys()])
+    aidata = {}
+    for index in [1, 2]:
+        handleGameOver(winner, startingplayer, gamegrids[:], index, aidata, ignoreai=1)
+    #printGameGridsValues(gamegrids, copy)
+    #printGameGridsValues(gamegrids, aidata)
+    return aidata, statdata
+
 
 # * * * * * 
 # * Main  * 
@@ -30,6 +62,7 @@ DEBUG = 0
 
 if __name__ == '__main__':
     #printAIData(aidata)
+    queue = Queue()
     statdata = [0, 0, 0, []]
     aidata = {}
     pool = Pool(5)
@@ -40,17 +73,23 @@ if __name__ == '__main__':
         bar = ProgressBar(times)
     try:
         for a in range(0, times):
-                print len(pool.apply_async(play, [aidata, statdata]).get(timeout = 1))
+                pool.apply_async(worker, [queue, aidata, statdata])
                 #play(aidata, statdata)
                 if PROGRESSBAR:
                     bar.update(a)            
+        if PROGRESSBAR:
+            bar.success()
+            del bar
     except KeyboardInterrupt:
-        print
+        if PROGRESSBAR:
+            del bar
     except:
-        print
+        if PROGRESSBAR:
+            del bar
         handleError()
     printStats(statdata)
     #printAIData(aidata)
+    for
     if RECORD:
         dump(aidata)
 

@@ -93,7 +93,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         if PROGRESSBAR:
             del bar
-        handleError()
     except:
         if PROGRESSBAR:
             del bar

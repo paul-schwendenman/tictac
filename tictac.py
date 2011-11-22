@@ -556,7 +556,7 @@ def quantifyResult(a, b, c):
         return AIADJUST[c - 1]['lose']
 
 
-def adjustAI(winner, startingplayer, gamegrids, index, aidata):
+def adjustAI(winner, startingplayer, gamegrids, index, aidata, ignoreai=0):
     DEBUGFUNC = 0
     #assert gameOver(gamegrids.pop()[0])[0] != 0
     k = quantifyResult(winner, startingplayer, index)
@@ -572,7 +572,10 @@ def adjustAI(winner, startingplayer, gamegrids, index, aidata):
             scores = aidata[maxgrid]
             translatedscores = translateGridReverse(scores, translation)
         else:
-            raise Exception("newgrid not in data")
+            if ignoreai:
+                translatedscores = scores = aidata[maxgrid] = Grid([0, 0, 0, 0, 0, 0, 0, 0, 0])
+            else:
+                raise Exception("newgrid not in data")
         if len(gamegrids) > 2:
             l = AIADJUST[startingplayer - 1]['last']
         else:
