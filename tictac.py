@@ -23,7 +23,7 @@ STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
 AIADJUST = [{'win': 2, 'lose': -2, 'draw': -1, 'last': 1},
-            {'win': 2, 'lose': -2, 'draw': 1, 'last': 1}]
+            {'win': 2, 'lose': -2, 'draw': -1, 'last': 1}]
 USEDSPACE = -5      # This is used to adjust values for used spaces in grids
 AICOUNT = 50        # Number of times to try and not pick a used move
 USENUMBERPAD = 0    # Option for tubbs
@@ -78,6 +78,12 @@ class Grid(UserList):
         #return int(self.__str__())
         return translateHash(self)
 
+class player():
+    pass
+class comp(player):
+    pass
+class comp(comp):
+    pass
 
 # * * * * * * * *
 # * UserError   *
@@ -462,6 +468,20 @@ def getMovePlayer(a, c):
     except (ValueError, IndexError, KeyError, EOFError, KeyboardInterrupt):
         raise UserError("User Quit")
 
+def getMoveSmarter(a, c, aidata):
+    pass
+    
+def pickPlay(a, b):
+    print a, [b[a[0]], b[a[1]], b[a[2]]]
+    if 0 in [b[a[0]], b[a[1]], b[a[2]]]:
+        if b[a[0]] != 0:
+            if b[a[0]] == b[a[0]]:
+                return (b[a[0]], a[2])
+            if b[a[0]] == b[a[2]]:
+                return (b[a[0]], a[1])
+        elif b[a[1]] != 0 and b[a[1]] == b[a[2]]:
+            return (b[a[1]], a[0])
+    return (None, None)
 
 def getMoveComputer(a, c, aidata):
     # Make getMove handle errors
