@@ -22,7 +22,7 @@ RECORD = 1              # Toggle Saving Data
 STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
-AIADJUST = [{'win': 1, 'lose': -2, 'draw': -1, 'last': 1},
+AIADJUST = [{'win': 2, 'lose': -2, 'draw': -1, 'last': 1},
             {'win': 2, 'lose': -2, 'draw': 1, 'last': 1}]
 USEDSPACE = -5      # This is used to adjust values for used spaces in grids
 AICOUNT = 50        # Number of times to try and not pick a used move

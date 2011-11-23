@@ -18,6 +18,16 @@ PROGRESSBAR = 1
 # * New Functions *
 # * * * * * * * * *
 
+class Time():
+    def __init__(self):
+        from time import time
+        self.start = time()
+    
+    def stop(self):
+        from time import time
+        return time() - self.start
+        
+
 # * * * * * * * * * * * *
 # * Modified Functions  *
 # * * * * * * * * * * * *
@@ -82,6 +92,7 @@ if __name__ == '__main__':
     if PROGRESSBAR:
         bar = ProgressBar(times, 50)
         #bar.setNewline()
+    time = Time()
     try:
         for a in range(0, times):
                 play(aidata, statdata)
@@ -97,8 +108,10 @@ if __name__ == '__main__':
         if PROGRESSBAR:
             del bar
         handleError()
+    time = time.stop()
     printStats(statdata)
     #printAIData(aidata)
+    print "Took %i seconds. Per unit: %i milliseconds" % (time, time*1000/times)
     if RECORD:
         dump(aidata)
 
