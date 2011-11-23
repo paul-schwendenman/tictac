@@ -1,4 +1,4 @@
-times = 1000
+times = 122
 
 # * * * * * *
 # * Imports *
@@ -6,6 +6,7 @@ times = 1000
 
 from tictac import *
 from ProgressBar import ProgressBar
+from Timer import Timer
 
 # * * * * * *
 # * Globals *
@@ -17,16 +18,6 @@ PROGRESSBAR = 1
 # * * * * * * * * *
 # * New Functions *
 # * * * * * * * * *
-
-class Time():
-    def __init__(self):
-        from time import time
-        self.start = time()
-    
-    def stop(self):
-        from time import time
-        return time() - self.start
-        
 
 # * * * * * * * * * * * *
 # * Modified Functions  *
@@ -83,6 +74,7 @@ def play(aidata, statdata):
 DEBUG = 0
 
 if __name__ == '__main__':
+    timer2 = Timer()
     #printAIData(aidata)
     statdata = [0, 0, 0, []]
     aidata = {}
@@ -92,7 +84,7 @@ if __name__ == '__main__':
     if PROGRESSBAR:
         bar = ProgressBar(times, 50)
         #bar.setNewline()
-    time = Time()
+    timer = Timer(times)
     try:
         for a in range(0, times):
                 play(aidata, statdata)
@@ -108,10 +100,9 @@ if __name__ == '__main__':
         if PROGRESSBAR:
             del bar
         handleError()
-    time = time.stop()
+    del timer
     printStats(statdata)
     #printAIData(aidata)
-    print "Took %i seconds. Per unit: %i milliseconds" % (time, time*1000/times)
     if RECORD:
         dump(aidata)
 

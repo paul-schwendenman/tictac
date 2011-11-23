@@ -11,7 +11,7 @@ from multiprocessing import Pool, Queue
 # * Globals *
 # * * * * * *
 
-times = 50
+times = 50000
 RECORD = 1
 PROGRESSBAR = 1
 
@@ -40,7 +40,6 @@ def play(aidata, statdata):
         grid[move] = player
         player = swapPlayer(player)        
         winner, row = gameOver(grid)
-    
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     #printXO(grid)
@@ -62,6 +61,7 @@ DEBUG = 0
 
 if __name__ == '__main__':
     #printAIData(aidata)
+    timer2 = Timer()
     queue = Queue()
     statdata = [0, 0, 0, []]
     aidata = {}
@@ -71,9 +71,11 @@ if __name__ == '__main__':
     print "\t\t\t\tRunning %i games" % (times)
     if PROGRESSBAR:
         bar = ProgressBar(times)
+    timer = Timer(times)
     try:
         for a in range(0, times):
-                pool.apply_async(worker, [queue, aidata, statdata])
+                #pool.apply_async(worker, [queue, aidata, statdata])
+                pool.apply_async(play, [aidata, statdata])
                 #play(aidata, statdata)
                 if PROGRESSBAR:
                     bar.update(a)            
@@ -87,9 +89,9 @@ if __name__ == '__main__':
         if PROGRESSBAR:
             del bar
         handleError()
+    del timer
     printStats(statdata)
     #printAIData(aidata)
-    for
     if RECORD:
         dump(aidata)
 
