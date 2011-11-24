@@ -415,6 +415,29 @@ def translateData():
             [8, 7, 6, 5, 4, 3, 2, 1, 0], [2, 5, 8, 1, 4, 7, 0, 3, 6]]
 
 
+# * * * * * * * * * * * * * * * * *
+# * Sorting and Filter Functions  *
+# * * * * * * * * * * * * * * * * *
+
+def mapGrid(f, grid):
+    lines = [(0, 1, 2), (3, 4, 5), (6, 7, 8), \
+         (0, 3, 6), (1, 4, 7), (2, 5, 8), \
+         (0, 4, 8), (2, 4, 6)]
+    return [f(line, grid) for line in lines]    
+
+
+def filterLinesNone(a):
+    return a[0] != None
+
+
+def filterLinesOne(a):
+    return a[0] == 1
+
+
+def filterLinesTwo(a):
+    return a[0] == 2
+
+
 # * * * * * * * * * * * * * * *
 # * Player Movement Functions *
 # * * * * * * * * * * * * * * *
@@ -469,18 +492,17 @@ def getMovePlayer(a, c):
         raise UserError("User Quit")
 
 def getMoveSmarter(a, c, aidata):
+    two = pickOne([item[1] for item in filter(filterLinesTwo, mapGrid(pickPlay, a))])
+    one = pickOne([item[1] for item in filter(filterLinesOne, mapGrid(pickPlay, a))]) 
     pass
     
 def pickPlay(a, b):
-    print a, [b[a[0]], b[a[1]], b[a[2]]]
-    if 0 in [b[a[0]], b[a[1]], b[a[2]]]:
-        if b[a[0]] != 0:
-            if b[a[0]] == b[a[0]]:
-                return (b[a[0]], a[2])
-            if b[a[0]] == b[a[2]]:
-                return (b[a[0]], a[1])
-        elif b[a[1]] != 0 and b[a[1]] == b[a[2]]:
-            return (b[a[1]], a[0])
+    c = [b[a[0]], b[a[1]], b[a[2]]]
+    if c.count(0) == 1:
+        index = c.index(0)
+        del c[index]
+        if c[0] == c[1]:
+            return (c[0], a[index])
     return (None, None)
 
 def getMoveComputer(a, c, aidata):
