@@ -2,7 +2,7 @@ class Timer():
     '''
     Basic Class for recording run time.
     '''
-    def __init__(self, itter = None):
+    def __init__(self, itter=None):
         '''
         Saves its creation time
         '''

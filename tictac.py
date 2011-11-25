@@ -22,8 +22,8 @@ RECORD = 1              # Toggle Saving Data
 STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
-AIADJUST = [{'win': 2, 'lose': -2, 'draw': -1, 'last': 1},
-            {'win': 2, 'lose': -2, 'draw': -1, 'last': 1}]
+AIADJUST = [{'win': 1, 'lose': -1, 'draw': 0, 'last': 2},
+            {'win': 1, 'lose': -1, 'draw': 0, 'last': 2}]
 USEDSPACE = -5      # This is used to adjust values for used spaces in grids
 AICOUNT = 50        # Number of times to try and not pick a used move
 USENUMBERPAD = 0    # Option for tubbs
@@ -390,7 +390,6 @@ def translateData():
 # * * * * * * * * * * * * * * * * *
 # * Sorting and Filter Functions  *
 # * * * * * * * * * * * * * * * * *
-
 def mapGrid(f, grid):
     lines = [(0, 1, 2), (3, 4, 5), (6, 7, 8), \
              (0, 3, 6), (1, 4, 7), (2, 5, 8), \
@@ -490,10 +489,8 @@ count = 0
 def getMove(n, a, aidata, c=None):
     b = 1000
     if n == 1:
-
         b = getMoveComputer(a, c, aidata)
         #b = getMoveSmarter(n, a, c, aidata)
-
         if b not in a.getEmptySpaces():
             global count
             count += 1
@@ -513,8 +510,8 @@ def getMove(n, a, aidata, c=None):
 
 
 def getMovePlayer(a, c):
-    printXO(a)
     try:
+        printXO(a)
         if c != None:
             print "Invalid Move: ", c + 1
         b = raw_input("Move? ")[0]
@@ -530,34 +527,27 @@ def getMovePlayer(a, c):
         raise UserError("User Quit")
 
 def getMoveSmarter(n, grid, c, aidata):
-    printXO(grid)
     one = ([item[1] for item in filter(filterLinesOne, mapGrid(pickPlay, grid))])
     two = ([item[1] for item in filter(filterLinesTwo, mapGrid(pickPlay, grid))])
-    print "A", grid
     grid = grid.getEmptySpaces()
-    print "B", grid
-    
     if n == 2:
         if  two:
             grid = two
-            print "C", grid
         elif one:
             grid = one
-            print "D", grid
     elif n == 1:
         if two:
             grid = two
-            print "E", grid
         elif one:
             grid = one
-            print "F", grid
-    print "G", grid
     return pickOne(grid)
     
 
 def getMoveComputer(a, c, aidata):
     # Make getMove handle errors
     DEBUGFUNC = 0
+    if a.count(0) == len(a):
+        return pickOne([pickOne([0, 2, 6, 8]), pickOne([1, 3, 5, 7]), 4])
     b = translateGridMax(a)
     if DEBUG or DEBUGFUNC:
         printXO(a)
@@ -664,10 +654,8 @@ def adjustAI(winner, startingplayer, gamegrids, index, aidata, ignoreai=0):
             scores = aidata[maxgrid]
             translatedscores = translateGridReverse(scores, translation)
         else:
-            if ignoreai:
-                translatedscores = scores = aidata[maxgrid] = Grid([0, 0, 0, 0, 0, 0, 0, 0, 0])
-            else:
-                raise Exception("newgrid not in data")
+            translatedscores = scores = aidata[maxgrid] = Grid([0, 0, 0, 0, 0, 0, 0, 0, 0])
+            #raise Exception("newgrid not in data")
         if len(gamegrids) > 2:
             l = AIADJUST[startingplayer - 1]['last']
         else:

@@ -10,7 +10,7 @@ console = 1
 
 import tictac
 from tictac import Grid, printXO, handleError
-from tictac import gameOver, gameOverFilter
+from ProgressBar import ProgressTimer
 
 # * * * * * *
 # * Code    *
@@ -19,12 +19,15 @@ from tictac import gameOver, gameOverFilter
 a = Grid([1, 1, 0, 2, 0, 2, 0, 1, 1])
 printXO(a)
 
+a = ProgressTimer(234, 60)
+
 # * * * * * *
 # * Console *
 # * * * * * *
 
 while console:
     try:
+        print
         input = raw_input(">> ")
         exec(input)
     except EOFError, KeyboardInterrupt:

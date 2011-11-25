@@ -1,11 +1,11 @@
-times = 12
+times = 10000
 
 # * * * * * *
 # * Imports *
 # * * * * * *
 
 from tictac import *
-from ProgressBar import ProgressBar
+from ProgressBar import ProgressTimer
 from Timer import Timer
 
 # * * * * * *
@@ -14,6 +14,7 @@ from Timer import Timer
 
 RECORD = 1
 PROGRESSBAR = 1
+SMARTAI = 1
 
 # * * * * * * * * *
 # * New Functions *
@@ -29,7 +30,10 @@ def getMove(n, a, aidata, c=None):
         b = getMoveComputer(a, c, aidata)
     else:
         assert n == 2
-        b = getMoveSmarter(n, a, c, aidata)
+        if SMARTAI:
+            b = getMoveSmarter(n, a, c, aidata)
+        else:
+            b = getMoveComputer(a, c, aidata)
 
     if b not in a.getEmptySpaces():
         global count
@@ -66,7 +70,7 @@ def play(aidata, statdata):
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     #printXO(grid)
-    printGameGrids(gamegrids)
+    #printGameGrids(gamegrids)
     #printGameGridsValues(gamegrids, aidata)
     #copy = dict([(key, aidata[key]) for key in aidata.keys()])
     for index in [1, 2]:
@@ -86,7 +90,7 @@ if __name__ == '__main__':
         aidata = load()
     print "\t\t\t\tRunning %i games" % (times)
     if PROGRESSBAR:
-        bar = ProgressBar(times, 50)
+        bar = ProgressTimer(times, 50)
         #bar.setNewline()
     timer = Timer(times)
     try:
