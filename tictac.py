@@ -277,34 +277,6 @@ def getInitialValues(a):
 
 
 # * * * * * * * * * * * *
-# * Game Over Function  * <-- Add to Grid?
-# * * * * * * * * * * * *
-def gameOver(a):
-    if a[0] == a[1] == a[2] and a[0] != 0:
-        return (a[0], 1)
-    elif a[3] == a[4] == a[5] and a[3] != 0:
-        return (a[3], 2)
-    elif a[6] == a[7] == a[8] and a[6] != 0:
-        return (a[6], 3)
-
-    elif a[0] == a[3] == a[6] and a[0] != 0:
-        return (a[0], 4)
-    elif a[1] == a[4] == a[7] and a[1] != 0:
-        return (a[1], 5)
-    elif a[2] == a[5] == a[8] and a[2] != 0:
-        return (a[2], 6)
-
-    elif a[0] == a[4] == a[8] and a[0] != 0:
-        return (a[0], 7)
-    elif a[6] == a[4] == a[2] and a[2] != 0:
-        return (a[6], 8)
-    elif sum(a) >= 13:
-        return (-1, 0)
-    else:
-        return (0, 0)
-
-
-# * * * * * * * * * * * *
 # * Translation Helpers *
 # * * * * * * * * * * * *
 def join(a):
@@ -421,21 +393,86 @@ def translateData():
 
 def mapGrid(f, grid):
     lines = [(0, 1, 2), (3, 4, 5), (6, 7, 8), \
-         (0, 3, 6), (1, 4, 7), (2, 5, 8), \
-         (0, 4, 8), (2, 4, 6)]
+             (0, 3, 6), (1, 4, 7), (2, 5, 8), \
+             (0, 4, 8), (2, 4, 6)]
     return [f(line, grid) for line in lines]    
 
 
 def filterLinesNone(a):
-    return a[0] != None
+    '''
+    Returns false if None
+    '''
+    return a != None
 
 
 def filterLinesOne(a):
+    '''
+    Returns true if one.
+    '''
     return a[0] == 1
 
 
 def filterLinesTwo(a):
+    '''
+    Returns true if two.
+    '''
     return a[0] == 2
+
+
+def pickGameOver(sample, grid):
+    '''
+    Picks the in a given sample. Ex: row.
+    '''
+    values = [grid[sample[0]], grid[sample[1]], grid[sample[2]]]
+    if values[0] == values[1] == values[2] and values[0] != 0:
+        return (values[0])
+    return (None)
+
+def pickPlay(sample, grid):
+    '''
+    Picks the open space in a given sample. Ex: row.
+    '''
+    values = [grid[sample[0]], grid[sample[1]], grid[sample[2]]]
+    if values.count(0) == 1:
+        index = values.index(0)
+        del values[index]
+        if values[0] == values[1]:
+            return (values[0], sample[index])
+    return (None, None)
+
+
+def gameOver(grid):
+    values = filter(filterLinesNone, mapGrid(pickGameOver, grid))
+    if len(values) == 0:
+        values = [0]
+        if  sum(grid) >= 13:  # Get empty spaces
+            values = [-1]
+    assert values.count(values[0]) == len(values)
+    return values[0]
+
+def gameOverOld(a):
+    if a[0] == a[1] == a[2] and a[0] != 0:
+        return (a[0], 1)
+    elif a[3] == a[4] == a[5] and a[3] != 0:
+        return (a[3], 2)
+    elif a[6] == a[7] == a[8] and a[6] != 0:
+        return (a[6], 3)
+
+    elif a[0] == a[3] == a[6] and a[0] != 0:
+        return (a[0], 4)
+    elif a[1] == a[4] == a[7] and a[1] != 0:
+        return (a[1], 5)
+    elif a[2] == a[5] == a[8] and a[2] != 0:
+        return (a[2], 6)
+
+    elif a[0] == a[4] == a[8] and a[0] != 0:
+        return (a[0], 7)
+    elif a[6] == a[4] == a[2] and a[2] != 0:
+        return (a[6], 8)
+    elif sum(a) >= 13:
+        return (-1, 0)
+    else:
+        return (0, 0)
 
 
 # * * * * * * * * * * * * * * *
@@ -455,6 +492,7 @@ def getMove(n, a, aidata, c=None):
     if n == 1:
 
         b = getMoveComputer(a, c, aidata)
+        #b = getMoveSmarter(n, a, c, aidata)
 
         if b not in a.getEmptySpaces():
             global count
@@ -491,19 +529,31 @@ def getMovePlayer(a, c):
     except (ValueError, IndexError, KeyError, EOFError, KeyboardInterrupt):
         raise UserError("User Quit")
 
-def getMoveSmarter(a, c, aidata):
-    two = pickOne([item[1] for item in filter(filterLinesTwo, mapGrid(pickPlay, a))])
-    one = pickOne([item[1] for item in filter(filterLinesOne, mapGrid(pickPlay, a))]) 
-    pass
+def getMoveSmarter(n, grid, c, aidata):
+    printXO(grid)
+    one = ([item[1] for item in filter(filterLinesOne, mapGrid(pickPlay, grid))])
+    two = ([item[1] for item in filter(filterLinesTwo, mapGrid(pickPlay, grid))])
+    print "A", grid
+    grid = grid.getEmptySpaces()
+    print "B", grid
     
-def pickPlay(a, b):
-    c = [b[a[0]], b[a[1]], b[a[2]]]
-    if c.count(0) == 1:
-        index = c.index(0)
-        del c[index]
-        if c[0] == c[1]:
-            return (c[0], a[index])
-    return (None, None)
+    if n == 2:
+        if  two:
+            grid = two
+            print "C", grid
+        elif one:
+            grid = one
+            print "D", grid
+    elif n == 1:
+        if two:
+            grid = two
+            print "E", grid
+        elif one:
+            grid = one
+            print "F", grid
+    print "G", grid
+    return pickOne(grid)
+    
 
 def getMoveComputer(a, c, aidata):
     # Make getMove handle errors
@@ -795,7 +845,7 @@ def play(aidata, statdata):
         if DEBUG or DEBUGFUNC:
             print "move (578): ", move
         grid[move] = player
-        winner, row = gameOver(grid)
+        winner = gameOver(grid)
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     printXO(grid)

@@ -1,4 +1,4 @@
-times = 1220
+times = 12
 
 # * * * * * *
 # * Imports *
@@ -25,7 +25,11 @@ PROGRESSBAR = 1
 count = 0
 
 def getMove(n, a, aidata, c=None):
-    b = getMoveComputer(a, c, aidata)
+    if n == 1:
+        b = getMoveComputer(a, c, aidata)
+    else:
+        assert n == 2
+        b = getMoveSmarter(n, a, c, aidata)
 
     if b not in a.getEmptySpaces():
         global count
@@ -57,12 +61,12 @@ def play(aidata, statdata):
         gamegrids.append((grid[:], move, player))
         grid[move] = player
         player = swapPlayer(player)        
-        winner, row = gameOver(grid)
+        winner = gameOver(grid)
     
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     #printXO(grid)
-    #printGameGrids(gamegrids)
+    printGameGrids(gamegrids)
     #printGameGridsValues(gamegrids, aidata)
     #copy = dict([(key, aidata[key]) for key in aidata.keys()])
     for index in [1, 2]:
