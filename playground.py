@@ -11,6 +11,7 @@ console = 1
 import tictac
 from tictac import Grid, printXO, handleError
 from ProgressBar import ProgressTimer
+from Timer import units
 
 # * * * * * *
 # * Code    *

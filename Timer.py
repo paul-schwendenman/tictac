@@ -17,6 +17,9 @@ class Timer():
         '''
         return self.time() - self.start
 
+    def setItter(self, itter):
+        self.itter = itter
+
     def __del__(self):
         '''
         Prints the lifetime
@@ -29,12 +32,12 @@ class Timer():
             print "Took", change, "seconds."
 
 
-def units(a, b):
+def units(time, count):
     '''
-    Doesn't Work... Idea Space Holder
+    Finds the correct units for a time given a count.
     '''
     from math import log
-    n = int((log(b / a) / log(10)) / 3 + 1)
+    n = int((log(count / time) / log(10)) / 3 + 1)
     prefix = {None: 'milli', 0: '', 1: 'milli', 2: 'micro', 3: 'nano', 4: 'pico'}
     multip = {None: 1000, 0: 1, 1: 1000, 2: 1000000, 3: 1000000000, 4: 1000000000000}
     return (prefix[n], multip[n])

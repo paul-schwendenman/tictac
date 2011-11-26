@@ -1,12 +1,13 @@
-times = 10000
+times = 4000
 
 # * * * * * *
 # * Imports *
 # * * * * * *
 
 from tictac import *
-from ProgressBar import ProgressTimer
+from ProgressBar import ProgressLock
 from Timer import Timer
+from multiprocessing import Process, Lock
 
 # * * * * * *
 # * Globals *
@@ -14,7 +15,12 @@ from Timer import Timer
 
 RECORD = 1
 PROGRESSBAR = 1
-SMARTAI = 1
+SMARTAI = 0
+PRINTGAMEGRIDS = 0
+PRINTLASTFIFTEEN = 1
+DISPLAYSTATS = 1
+CHECKAIDATA = 0
+SHOWGAME = 0
 
 # * * * * * * * * *
 # * New Functions *
@@ -53,7 +59,7 @@ def handleGameOver(a, b, c, d, e):
 # * * * * * 
 # * Main  * 
 # * * * * * 
-def play(aidata, statdata):
+def play(aidata, statdata, games):
     grid = Grid()
     startingplayer = 1
     winner = 0
@@ -69,15 +75,19 @@ def play(aidata, statdata):
     
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
-    #printXO(grid)
-    #printGameGrids(gamegrids)
-    #printGameGridsValues(gamegrids, aidata)
-    #copy = dict([(key, aidata[key]) for key in aidata.keys()])
+    pushGame(games, gamegrids)
+    if SHOWGAME:
+        printXO(grid)
+    if PRINTGAMEGRIDS:
+        printGameGrids(gamegrids)
+    if CHECKAIDATA:
+        copy = dict([(key, aidata[key]) for key in aidata.keys()])
     for index in [1, 2]:
         handleGameOver(winner, startingplayer, gamegrids[:], index, aidata)
-    #printGameGridsValues(gamegrids, copy)
-    #printGameGridsValues(gamegrids, aidata)
-    return aidata
+    if CHECKAIDATA:
+        printGameGridsValues(gamegrids, copy)
+        printGameGridsValues(gamegrids, aidata)
+    return gamegrids
 
 DEBUG = 0
 
@@ -86,30 +96,43 @@ if __name__ == '__main__':
     #printAIData(aidata)
     statdata = [0, 0, 0, []]
     aidata = {}
+    games = []
+    lock = Lock()
     if RECORD:
         aidata = load()
     print "\t\t\t\tRunning %i games" % (times)
     if PROGRESSBAR:
-        bar = ProgressTimer(times, 50)
+        bar = ProgressLock(times, 50)
         #bar.setNewline()
     timer = Timer(times)
+    
     try:
         for a in range(0, times):
-                play(aidata, statdata)
+                game = play(aidata, statdata, games)
                 if PROGRESSBAR:
-                    bar.update(a)            
+                    p = Process(target=bar.update, args=[a, lock])
+                    p.start()
+                    #p.join()
+                    #bar.update(a)            
         if PROGRESSBAR:
             bar.success()
-            del bar
     except KeyboardInterrupt:
-        if PROGRESSBAR:
-            del bar
+        timer.setItter(a)
     except:
+        timer.setItter(a)
+        handleError()
+    finally:
         if PROGRESSBAR:
             del bar
-        handleError()
+        lock.acquire()
+        print "Ran", a, " times."
+        lock.release()
+        
     del timer
-    printStats(statdata)
+    if PRINTLASTFIFTEEN:
+        printGames(games)
+    if DISPLAYSTATS:
+        printStats(statdata)
     #printAIData(aidata)
     if RECORD:
         dump(aidata)

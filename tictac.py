@@ -58,7 +58,8 @@ class Grid(UserList):
                 return b
             else:
                 return a
-        return ':'.join([("      "  + str(a))[pick(-4, -len(str(a))):] for a in self.data])
+        return ':'.join([("      " + str(a))[pick(-4, -len(str(a))):] \
+               for a in self.data])
 
     def fromString(self, a):
         self.data = [int(b) for b in a.split(':')]
@@ -78,12 +79,18 @@ class Grid(UserList):
         #return int(self.__str__())
         return translateHash(self)
 
+
 class player():
     pass
+
+
 class comp(player):
     pass
+
+
 class comp(comp):
     pass
+
 
 # * * * * * * * *
 # * UserError   *
@@ -394,7 +401,7 @@ def mapGrid(f, grid):
     lines = [(0, 1, 2), (3, 4, 5), (6, 7, 8), \
              (0, 3, 6), (1, 4, 7), (2, 5, 8), \
              (0, 4, 8), (2, 4, 6)]
-    return [f(line, grid) for line in lines]    
+    return [f(line, grid) for line in lines]
 
 
 def filterLinesNone(a):
@@ -427,6 +434,7 @@ def pickGameOver(sample, grid):
         return (values[0])
     return (None)
 
+
 def pickPlay(sample, grid):
     '''
     Picks the open space in a given sample. Ex: row.
@@ -448,6 +456,7 @@ def gameOver(grid):
             values = [-1]
     assert values.count(values[0]) == len(values)
     return values[0]
+
 
 def gameOverOld(a):
     if a[0] == a[1] == a[2] and a[0] != 0:
@@ -526,9 +535,12 @@ def getMovePlayer(a, c):
     except (ValueError, IndexError, KeyError, EOFError, KeyboardInterrupt):
         raise UserError("User Quit")
 
+
 def getMoveSmarter(n, grid, c, aidata):
-    one = ([item[1] for item in filter(filterLinesOne, mapGrid(pickPlay, grid))])
-    two = ([item[1] for item in filter(filterLinesTwo, mapGrid(pickPlay, grid))])
+    one = ([item[1] for item in filter(filterLinesOne, \
+            mapGrid(pickPlay, grid))])
+    two = ([item[1] for item in filter(filterLinesTwo, \
+            mapGrid(pickPlay, grid))])
     grid = grid.getEmptySpaces()
     if n == 2:
         if  two:
@@ -541,7 +553,7 @@ def getMoveSmarter(n, grid, c, aidata):
         elif one:
             grid = one
     return pickOne(grid)
-    
+
 
 def getMoveComputer(a, c, aidata):
     # Make getMove handle errors
@@ -638,7 +650,7 @@ def quantifyResult(a, b, c):
         return AIADJUST[c - 1]['lose']
 
 
-def adjustAI(winner, startingplayer, gamegrids, index, aidata, ignoreai=0):
+def adjustAI(winner, startingplayer, gamegrids, index, aidata):
     DEBUGFUNC = 0
     #assert gameOver(gamegrids.pop()[0])[0] != 0
     k = quantifyResult(winner, startingplayer, index)
@@ -654,7 +666,8 @@ def adjustAI(winner, startingplayer, gamegrids, index, aidata, ignoreai=0):
             scores = aidata[maxgrid]
             translatedscores = translateGridReverse(scores, translation)
         else:
-            translatedscores = scores = aidata[maxgrid] = Grid([0, 0, 0, 0, 0, 0, 0, 0, 0])
+            translatedscores = scores = aidata[maxgrid] = \
+                Grid([0, 0, 0, 0, 0, 0, 0, 0, 0])
             #raise Exception("newgrid not in data")
         if len(gamegrids) > 2:
             l = AIADJUST[startingplayer - 1]['last']
@@ -678,6 +691,23 @@ def adjustAI(winner, startingplayer, gamegrids, index, aidata, ignoreai=0):
             print "\n\t index: ", index, "\n\t scores[move]: ", scores[move],
             print "\n\t l*k (change): ", l * k,
             print "\n\t aidata[grid]: ", aidata[maxgrid]
+
+
+# * * * * * * * * * * * * *
+# * Print Game Functions  *
+# * * * * * * * * * * * * *
+def pushGame(b, a):
+    b.reverse()
+    b.append(a)
+    b.reverse()
+    if len(b) > NUMBERLASTGAMES:
+        b.pop()
+    return b
+
+
+def printGames(games):
+    for game in games:
+        printGameGrids(game)
 
 
 # * * * * * * * * * * * * *

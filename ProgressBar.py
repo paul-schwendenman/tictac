@@ -75,6 +75,19 @@ class ProgressTimer(ProgressBar, Timer):
     def update(self, current):
         if current != 0:
             time = (self.peek() / current) * (self.max - current) 
-            unit = units(time, 1)
-            self.tail = " ETA: " + str(int(time*unit[1])) + " " + unit[0] + "s  "
+            self.tail = " ETA: " + eta(time)
         self.update2(self, current)
+
+def eta(time):
+    if int(time / 60) != 0:
+        return str(int(time / 60)) + "m " + str(int(time - int(time / 60) * 60)) + "s  "
+        
+    else:
+        unit = units(time, 1)
+        return str(int(time*unit[1])) + " " + unit[0] + "s  "
+
+class ProgressLock(ProgressTimer):
+    def update(self, current, lock):
+        lock.acquire()
+        ProgressTimer.update(self, current)
+        lock.release()
