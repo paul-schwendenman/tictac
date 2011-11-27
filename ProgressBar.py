@@ -56,12 +56,14 @@ class ProgressBar:
         self.number = self.topbound
         self.tail = " " * 20
         self.display()
+        print
 
     def __del__(self):
         '''
         Destructor
         '''
-        print
+        self.success()
+
 
 from Timer import Timer, units
 class ProgressTimer(ProgressBar, Timer):
@@ -91,3 +93,18 @@ class ProgressLock(ProgressTimer):
         lock.acquire()
         ProgressTimer.update(self, current)
         lock.release()
+
+class ProgressProcess(ProgressTimer):
+    def __init__(self, *args):
+        from multiprocessing import Process
+        self.Process = Process
+        ProgressTimer.__init__(self, *args)
+
+    def update(self, current):
+        self.process = self.Process(target=ProgressTimer.update, args=[self, current])
+        self.process.start()
+
+    def success(self):
+        self.process.join()
+        ProgressTimer.success(self)
+    

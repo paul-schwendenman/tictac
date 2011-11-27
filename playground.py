@@ -22,6 +22,9 @@ printXO(a)
 
 a = ProgressTimer(234, 60)
 
+def func(**args):
+    print args
+
 # * * * * * *
 # * Console *
 # * * * * * *

@@ -28,6 +28,14 @@ USEDSPACE = -5      # This is used to adjust values for used spaces in grids
 RECURSIONCOUNT = 50        # Number of times to try and not pick a used move
 USENUMBERPAD = 0    # Option for tubbs
 
+PROGRESSBAR = 1
+SMARTAI = 0
+PRINTGAMEGRIDS = 0
+PRINTLASTFIFTEEN = 1
+DISPLAYSTATS = 1
+CHECKAIDATA = 0
+TIMERS = 1 
+
 
 # * * * * * * * *
 # * Grid Class  *
@@ -859,8 +867,7 @@ def handleError():
 # * * * * *
 # * Main  *
 # * * * * *
-def play(players, statdata):
-    DEBUGFUNC = 0
+def play(players, statdata, games):
     grid = Grid()
     startingplayer = STARTINGPLAYER
     winner = 0
@@ -870,26 +877,26 @@ def play(players, statdata):
         move = getMove(player, grid, players)
         gamegrids.append((grid[:], move, player))
         player = swapPlayer(player)
-        if DEBUG or DEBUGFUNC:
-            print "move (578): ", move
         grid[move] = player
         winner = gameOver(grid)
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
-    #printGameGrids(gamegrids)
-    #printGameGridsValues(gamegrids, aidata)
-    for index in range(1, 3):
+    pushGame(games, gamegrids)
+    if PRINTGAMEGRIDS: 
+        printGameGrids(gamegrids)
+    if CHECKAIDATA:
+        copy = dict([(key, aidata[key]) for key in aidata.keys()])
+    for index in [1, 2]:
         handleGameOver(winner, startingplayer, gamegrids[:], index, players)
-    #printGameGridsValues(gamegrids, aidata)
-
+    if CHECKAIDATA:
+        printGameGridsValues(gamegrids, copy)  
+        printGameGridsValues(gamegrids, aidata)
+                    
 
 def main(players):
-    # na = 'y'
-    DEBUGFUNC = 0
-
     aidata = {}
     statdata = [0, 0, 0, []]
-
+    games = []
     # b = raw_input("Enter name to load previous \
     #                memory or \"new\" to start a new account: ")
     try:
@@ -897,12 +904,10 @@ def main(players):
             aidata = load()
         players[1].setAIdata(aidata)
         while 1:  # a == 'y' or a == 'Y':
-            play(players, statdata)
+            play(players, statdata, games)
             # a = raw_input("Play again? ")[0]
     except UserError:
         print "User quit."
-        if DEBUG or DEBUGFUNC:
-            handleError()
     except:
         handleError()
     if DISPLAYSTATS:
@@ -913,6 +918,6 @@ def main(players):
 
 
 if __name__ == "__main__":
-    players = [None, CompLearning(1), Human(2)]
-    #players = [None, CompTwo(1), Human(2)]
+    #players = [None, CompLearning(1), CompTwo(2)]
+    players = [None, CompTwo(1), Human(2)]
     main(players)
