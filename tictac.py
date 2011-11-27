@@ -849,19 +849,12 @@ def handleError():
     '''
     An in house represention for Error Handling.
     '''
-    import sys
+    import sys, traceback
     stop = 1
-    line = []
-    line.append(sys.exc_info()[2].tb_lineno)
-    tb = sys.exc_info()[2].tb_next
-    while stop:
-        if tb == None:
-            stop = 0
-        else:
-            line.append(tb.tb_lineno)
-            tb = tb.tb_next
-    print "\t", __name__, sys.exc_info()[0], sys.exc_info()[1],
-    print "\n\t line no: ", line[-1], "\n\t traceback: ", line
+    tb = sys.exc_info()[2]
+    lines = [(t[1], t[0]) for t in traceback.extract_tb(tb)]
+    print "\t", sys.exc_info()[0], sys.exc_info()[1],
+    print "\n\t line no: ", lines[-1][0], "\n\t traceback: ", [line[1][:-3] + ":" + str(line[0]) for line in lines]
 
 
 # * * * * *
@@ -907,7 +900,7 @@ def main(players):
             play(players, statdata, games)
             # a = raw_input("Play again? ")[0]
     except UserError:
-        print "User quit."
+        print "\nUser quit."
     except:
         handleError()
     if DISPLAYSTATS:
