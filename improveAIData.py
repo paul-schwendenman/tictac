@@ -1,4 +1,4 @@
-times = 1000
+times = 10000
 
 # * * * * * *
 # * Imports *
@@ -67,7 +67,7 @@ if __name__ == '__main__':
             timer.setItter(a)
         handleError()
     finally:
-        print "Ran", a, " times."
+        print "Ran", a + 1, " times."
         
     if TIMERS:
         del timer

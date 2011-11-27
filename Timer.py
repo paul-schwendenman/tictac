@@ -27,9 +27,9 @@ class Timer():
         change = self.peek()
         if self.itter:
             prefix, multip = units(change, self.itter)
-            print "Took %d seconds. Per unit: %i %sseconds" % (change, change*multip/self.itter, prefix)
+            print "Took", round(change, 2), "seconds. Per unit:", round(change*multip/self.itter), "%sseconds" % (prefix)
         else:
-            print "Took", change, "seconds."
+            print "Took", round(change, 3), "seconds."
 
 
 def units(time, count):
