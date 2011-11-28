@@ -10,7 +10,6 @@
 # * * * * * * *
 # * Imported  *
 # * * * * * * *
-import pickle as pack
 from UserList import UserList
 from handleError import handleError
 from ProgressBar import ProgressProcess
@@ -21,7 +20,6 @@ from Timer import Timer
 # * * * * * * * * * * *
 DEBUG = 0               # Choose: 0 or 1
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
-FILENAME = "data"       # Save file
 AIADJUST = [{'win': 1, 'lose': -1, 'draw': 0, 'last': 2},
             {'win': 1, 'lose': -1, 'draw': 0, 'last': 2}]
 USEDSPACE = -5      # This is used to adjust values for used spaces in grids
@@ -70,6 +68,9 @@ class Grid(UserList):
         return [a for a, b in enumerate(self.data) if b == 0]
 
     def getUsedSpaces(self):
+        '''
+        Returns a list of (spaces) list indices that are not valued empty.
+        '''
         return [a for a, b in enumerate(self.data) if b != 0]
 
     def __hash__(self):
@@ -129,9 +130,6 @@ class Human(Player):
             if input == "h" or input == "H":
                 printHelp()
                 input = raw_input("Move? ")[0]
-            if USENUMBERPAD:
-                return {-1: -1, 7: 0, 8: 1, 9: 2, 4: 3,
-                         5: 4, 6: 5, 1: 6, 2: 7, 3: 8}[int(input)]
             else:
                 return int(input) - 1
         except (ValueError, IndexError, KeyError, EOFError, KeyboardInterrupt):
@@ -152,16 +150,28 @@ class HumanNumber(Human):
     '''
     Use the numberpad.
     '''
-    def getMove(*args):
-        return {-1: -1, 7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: 8}\
-               [Human.getMove(self, *args) + 1] - 1
+    def getMove(self, *args):
+        a = {7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: \
+            8}[Human.getMove(self, *args) + 1] - 1
+        print "Move:", a
+        return a
 
 class Comp(Player):
     '''
     Base that all computer players have.
     '''
-    def __init__(self, index):
+    def __init__(self, index, **settings):
         self.index = index
+        if 'filename' in settings:
+            self.filename = settings['filename']
+        else:
+            self.filename = 'data'
+        if 'record' in settings and settings['record'] == 1:
+            self.record = 1
+            self.load()
+        else:
+            self.record = 0
+            self.aidata = {}
 
     def setAIdata(self, aidata):
         self.aidata = aidata
@@ -171,6 +181,35 @@ class Comp(Player):
 
     def handleGameOver(self, *args):
         pass
+
+    def loadPickle(self, filename=None):
+        from cPickle import load
+        try:
+            a = open(filename)
+            self.aidata = load(a)
+            a.close()
+        except IOError:
+            print "File doesn't exist?"
+            self.aidata = {}
+        else:
+            print "aidata has %i items" % (len(self.aidata))
+
+    def load(self):
+        self.loadPickle(self.filename)
+
+    def dumpPickle(self):
+        from cPickle import dump
+        b = open(self.filename, "w")
+        dump(self.aidata, b)
+        print "aidata has %i items" % (len(a))
+        b.close()
+    
+    def dump(self):
+        self.dumpPickle()
+    
+    def __del__(self):
+        if self.record:
+            self.dump()
 
 
 class CompPick(Comp):
@@ -250,6 +289,40 @@ class CompLearning(Comp):
 
     def handleGameOver(self, a, b):
         adjustAI(a, b[: -1][2 - self.index:: 2], self.index, self.aidata)
+
+    def load(self):
+        self.aidata = {}
+        try:
+            file = open(self.filename)
+            lines = file.readlines()
+            for line in lines:
+                line = line[:-1].split("\t")
+                grid = Grid()
+                value = Grid()
+                grid.fromString(line[0])
+                value.fromString(line[1])
+                self.aidata[grid] = value
+            file.close()
+        except IOError:
+            print "File doesn't exist?"
+            self.aidata = {}
+        except:
+            handleError
+            try:
+                file.close()
+                self.loadPickle()
+            except:
+                pass
+        print "aidata has %i items" % (len(aidata))
+
+    def dump(self):
+        file = open(self.aidata, "w")
+        grids = sorted(self.aidata.keys())
+        for grid in grids:
+            file.write(grid.toString() + "\t" + self.aidata[grid].toString() + "\n")
+        print "aidata has %i items" % (len(aidata))
+        file.close()
+
 
 
 # * * * * * * * *
@@ -433,14 +506,6 @@ def getUsedSpaces(a):
         if d != empty:
             b.append(c)
     return b
-
-
-def getInitialValues(a):
-    '''
-    Return
-    '''
-    b = {0: 0, 1: USEDSPACEBUMP, 2: USEDSPACEBUMP}
-    return [b[c] for c in a]
 
 
 # * * * * * * * * * * * *
@@ -635,7 +700,7 @@ def getMove(n, grid, players, error=None):
     '''
     assert (n == 1) or (n == 2)
     move = players[n].getMove(grid, error)
-
+    print [type(sad) for sad in players]
     count = 0
     if move not in grid.getEmptySpaces():
         move = getMove(n, grid, players, move)
@@ -776,91 +841,35 @@ def analyzeStats(a, b):
 # * * * * * * * * * * * * * *
 # * File Control Functions  *
 # * * * * * * * * * * * * * *
-def loadPickle():
-    DEBUGFUNC = 1
-    try:
-        a = open(FILENAME)
-        c = pack.load(a)
-        a.close()
-    except IOError:
-        if DEBUG or DEBUGFUNC:
-            print "File doesn't exist? IO Error, line 287"
-        c = {}
-    if DEBUG or DEBUGFUNC:
-        print "aidata has %i items" % (len(c))
-    return c
-
-
-def load():
-    DEBUGFUNC = 1
-    aidata = {}
-    try:
-        file = open(FILENAME)
-        lines = file.readlines()
-        for line in lines:
-            line = line[:-1].split("\t")
-            grid = Grid()
-            value = Grid()
-            grid.fromString(line[0])
-            value.fromString(line[1])
-            aidata[grid] = value
-        file.close()
-    except IOError:
-        if DEBUG or DEBUGFUNC:
-            print "File doesn't exist? IO Error, line 287"
-        aidata = {}
-    except:
-        handleError
-        try:
-            file.close()
-            aidata = loadPickle()
-        except:
-            pass
-    if DEBUG or DEBUGFUNC:
-        print "aidata has %i items" % (len(aidata))
-    return aidata
-
-
-def dumpPickle(a):
-    DEBUGFUNC = 1
-    b = open(FILENAME, "w")
-    pack.dump(a, b)
-    if DEBUG or DEBUGFUNC:
-        print "aidata has %i items" % (len(a))
-    b.close()
-
-
-def dump(aidata):
-    DEBUGFUNC = 1
-    file = open(FILENAME, "w")
-    grids = sorted(aidata.keys())
-    for grid in grids:
-        file.write(grid.toString() + "\t" + aidata[grid].toString() + "\n")
-    if DEBUG or DEBUGFUNC:
-        print "aidata has %i items" % (len(aidata))
-    file.close()
-
 
 # * * * * *
 # * Main  *
 # * * * * *
 def play(players, statdata, games, On, **settings):
+    print "11"
     grid = Grid()
     winner = 0
     gamegrids = []
     player = 1
+    print "12"
     while winner == 0:
+        print "14"
         move = getMove(player, grid, players)
         gamegrids.append((grid[:], move, player))
+        copy = player
         player = swapPlayer(player)
+        print copy, player
+        print "15"
         grid[move] = player
         winner = gameOver(grid)
+    print "13"
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     pushGame(games, gamegrids)
     if On('gamegrids'):
         printGameGrids(gamegrids)
     if On('checkdata'):
+        # Doesn't work
         copy = dict([(key, aidata[key]) for key in aidata.keys()])
     for index in [1, 2]:
         handleGameOver(winner, gamegrids[:], index, players)
@@ -870,18 +879,16 @@ def play(players, statdata, games, On, **settings):
                     
 
 def main(players, **settings):
+    print "1"
     def On(key):
         return key in settings and settings[key] != 0
     if On('timers'):
         timer2 = Timer()
     #printAIData(aidata)
     statdata = [0, 0, 0, []]
-    aidata = {}
     games = []
+    print "2"
     players = [None, CompLearning(1), CompTwo(2)]
-    if On('record'):
-        aidata = load()
-    players[1].setAIdata(aidata)
     if On('times'):
         print "Running", (settings['times']), "games"
     if On('progressbar'):
@@ -890,17 +897,19 @@ def main(players, **settings):
     if On('timers'):
         timer = Timer(times)
     try:
+        print "3"
         if On('times'):
             for a in range(0, settings['times']):
-                play(players, statdata, games)
+                play(players, statdata, games, On)
                 if On('progressbar'):
                     bar.update(a)            
             if On('progressbar'):
                 bar.success()
                 #del bar
         else:
+            print "4"
             while (1):
-                play(players, statdata, games)
+                play(players, statdata, games, On)
     except UserError:
         print "\nUser quit."
     except KeyboardInterrupt:
@@ -921,17 +930,14 @@ def main(players, **settings):
     if On('stats'):
         printStats(statdata)
     #printAIData(aidata)
-    if On('record'):
-        aidata = players[1].aidata
-        dump(aidata)
 
 
 if __name__ == "__main__":
     #players = [None, CompLearning(1), CompTwo(2)]
-    #players = [None, CompTwo(1), Human(2)]
+    players = [None, CompTwo(1), Human(2)]
     #players = [None, CompLearning(1), Human(1)]
     # {'record': 1, 'stats': 1, 'lastfifteen': 1, 'timers': 1, \
     # 'times': 100, 'progressbar': 50, 'gamegrids': 1, 'checkdata': 1}
-
+    main(players, stats=1, lastfifteen=1)
     #main(players, times=100, progressbar=60)
-    main([None, CompTwo(1), HumanNumber(2)])
+    #main([None, CompTwo(1), HumanNumber(2)])
