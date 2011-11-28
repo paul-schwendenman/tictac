@@ -13,30 +13,19 @@
 import pickle as pack
 from UserList import UserList
 from handleError import handleError
+from ProgressBar import ProgressProcess
+from Timer import Timer
 
 # * * * * * * * * * * *
 # * Global Variables  *
 # * * * * * * * * * * *
 DEBUG = 0               # Choose: 0 or 1
-DISPLAYSTATS = 1
-RECORD = 1              # Toggle Saving Data
-STARTINGPLAYER = 1      # Choose: 1 or 2
 NUMBERLASTGAMES = 15    # Choose: 1, 2, 3...
 FILENAME = "data"       # Save file
 AIADJUST = [{'win': 1, 'lose': -1, 'draw': 0, 'last': 2},
             {'win': 1, 'lose': -1, 'draw': 0, 'last': 2}]
 USEDSPACE = -5      # This is used to adjust values for used spaces in grids
 RECURSIONCOUNT = 50        # Number of times to try and not pick a used move
-USENUMBERPAD = 0    # Option for tubbs
-
-PROGRESSBAR = 1
-SMARTAI = 0
-PRINTGAMEGRIDS = 0
-PRINTLASTFIFTEEN = 1
-DISPLAYSTATS = 1
-CHECKAIDATA = 0
-TIMERS = 1 
-
 
 # * * * * * * * *
 # * Grid Class  *
@@ -148,19 +137,24 @@ class Human(Player):
         except (ValueError, IndexError, KeyError, EOFError, KeyboardInterrupt):
             raise UserError("User Quit")
 
-    def handleGameOver(self, a, b, c):
-        printXO(c[-1][0])
-        if a == -1:
+    def handleGameOver(self, winner, gamegrids):
+        printXO(gamegrids[-1][0])
+        assert winner in [-1, 1, 2]
+        if winner == -1:
             print "You tied!"
-        elif (a == self.index):
+        elif (winner == self.index):
             print "You won! computer lost"
-        elif (a != self.index):
-            print a, self.index
-            print "You lost, computer won"
         else:
-            print "Winner not -1, 1, or 2"
-            raise IndexError
+            print "You lost, computer won"
 
+
+class HumanNumber(Human):
+    '''
+    Use the numberpad.
+    '''
+    def getMove(*args):
+        return {-1: -1, 7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: 8}\
+               [Human.getMove(self, *args) + 1] - 1
 
 class Comp(Player):
     '''
@@ -179,7 +173,18 @@ class Comp(Player):
         pass
 
 
+class CompPick(Comp):
+    '''
+    Pick one... no thought.
+    '''
+    def getMove(self, grid, c):
+        return pickOne(grid.getEmptySpaces())
+
 class CompTwo(Comp):
+    '''
+    Plays 'perfect' should finish wins and
+    should block moves. 
+    '''
     def getMove(self, grid, c):
         one = ([item[1] for item in filter(filterLinesOne, \
                 mapGrid(pickPlay, grid))])
@@ -219,11 +224,9 @@ class CompLearning(Comp):
             f = [0, 1, 2, 3, 4, 5, 6, 7, 8, ]
             e = translateGridReverse(f, b[1])[error]
             if DEBUG or DEBUGFUNC:
-                print "Invalid Computer Move:",
-                print "\n\t error:", error,
-                print "\t e:", e,
-                print "\t b[1]:", b[1],
-                print "\n\t self.aidata[b[0]]:", self.aidata[b[0]].toString(),
+                print "Invalid Computer Move:"
+                print "\t error:", error, "\t e:", e, "\t b[1]:", b[1]
+                print "\t self.aidata[b[0]]:", self.aidata[b[0]].toString(),
             self.aidata[b[0]][e] += USEDSPACE
             if DEBUG or DEBUGFUNC:
                 print "\nAfter:"
@@ -235,8 +238,8 @@ class CompLearning(Comp):
 
         if d == None:
             # Should be Intializing 'new' states
-            if DEBUG or DEBUGFUNC:
-                print "AI\n\t self.aidata:", self.aidata,
+            #if DEBUG or DEBUGFUNC:
+            #    print "AI\n\t self.aidata:", self.aidata,
             self.aidata[b[0]] = Grid()
             if DEBUG or DEBUGFUNC:
                 print "\n\t empty: ", self.aidata[b[0]]
@@ -245,8 +248,8 @@ class CompLearning(Comp):
         return pickOne(d)
         #return getEmptySpaces(a)[0]
 
-    def handleGameOver(self, a, b, c):
-        adjustAI(a, b, c[: -1][2 - self.index:: 2], self.index, self.aidata)
+    def handleGameOver(self, a, b):
+        adjustAI(a, b[: -1][2 - self.index:: 2], self.index, self.aidata)
 
 
 # * * * * * * * *
@@ -651,28 +654,24 @@ def pickOne(list):
 # * * * * * * * * * * * * * * * * *
 # * Player Finalization Handlers  *
 # * * * * * * * * * * * * * * * * *
-def handleGameOver(a, b, c, index, players):
+def handleGameOver(a, b, index, players):
     assert (index == 1) or (index == 2)
-    players[index].handleGameOver(a, b, c)
+    players[index].handleGameOver(a, b)
 
 
-def quantifyResult(a, b, c):
-    if a == -1:  # draw
-        return AIADJUST[c - 1]['draw']
-    elif (a == c):  # win
-        if DEBUG:
-            print "AI win! a: %i, b: %i, c: %i" % (a, b, c)
-        return AIADJUST[c - 1]['win']
+def quantifyResult(winner, index):
+    if winner == -1:  # draw
+        return AIADJUST[index - 1]['draw']
+    elif (winner == index):  # win
+        return AIADJUST[index - 1]['win']
     else:  # loss
-        if DEBUG:
-            print "AI loss :( a: %i, b: %i, c: %i" % (a, b, c)
-        return AIADJUST[c - 1]['lose']
+        return AIADJUST[index - 1]['lose']
 
 
-def adjustAI(winner, startingplayer, gamegrids, index, aidata):
+def adjustAI(winner, gamegrids, index, aidata):
     DEBUGFUNC = 0
     #assert gameOver(gamegrids.pop()[0])[0] != 0
-    k = quantifyResult(winner, startingplayer, index)
+    k = quantifyResult(winner, index)
     if DEBUG or DEBUGFUNC:
         printGameGrids(gamegrids)
     while len(gamegrids) > 0:
@@ -689,7 +688,7 @@ def adjustAI(winner, startingplayer, gamegrids, index, aidata):
                 Grid([0, 0, 0, 0, 0, 0, 0, 0, 0])
             #raise Exception("newgrid not in data")
         if len(gamegrids) > 2:
-            l = AIADJUST[startingplayer - 1]['last']
+            l = AIADJUST[index - 1]['last']
         else:
             l = 1
 
@@ -703,7 +702,6 @@ def adjustAI(winner, startingplayer, gamegrids, index, aidata):
             printEighteen(grid.returnXO(), adjustedscores)
         if DEBUG or DEBUGFUNC:
             print "AI win\n\t winner: ", winner,
-            print "\n\t starting player: ", startingplayer,
             print "\n\t gamegrids: ", gamegrids, "\n\t grid: ", grid,
             print "\n\t move: ", move, "\n\t scores: ", scores,
             print "\n\t adjustedscores: ", adjustedscores,
@@ -846,12 +844,11 @@ def dump(aidata):
 # * * * * *
 # * Main  *
 # * * * * *
-def play(players, statdata, games):
+def play(players, statdata, games, On, **settings):
     grid = Grid()
-    startingplayer = STARTINGPLAYER
     winner = 0
     gamegrids = []
-    player = startingplayer
+    player = 1
     while winner == 0:
         move = getMove(player, grid, players)
         gamegrids.append((grid[:], move, player))
@@ -861,42 +858,80 @@ def play(players, statdata, games):
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     pushGame(games, gamegrids)
-    if PRINTGAMEGRIDS: 
+    if On('gamegrids'):
         printGameGrids(gamegrids)
-    if CHECKAIDATA:
+    if On('checkdata'):
         copy = dict([(key, aidata[key]) for key in aidata.keys()])
     for index in [1, 2]:
-        handleGameOver(winner, startingplayer, gamegrids[:], index, players)
-    if CHECKAIDATA:
+        handleGameOver(winner, gamegrids[:], index, players)
+    if On('checkdata'):
         printGameGridsValues(gamegrids, copy)  
         printGameGridsValues(gamegrids, aidata)
                     
 
-def main(players):
-    aidata = {}
+def main(players, **settings):
+    def On(key):
+        return key in settings and settings[key] != 0
+    if On('timers'):
+        timer2 = Timer()
+    #printAIData(aidata)
     statdata = [0, 0, 0, []]
+    aidata = {}
     games = []
-    # b = raw_input("Enter name to load previous \
-    #                memory or \"new\" to start a new account: ")
+    players = [None, CompLearning(1), CompTwo(2)]
+    if On('record'):
+        aidata = load()
+    players[1].setAIdata(aidata)
+    if On('times'):
+        print "Running", (settings['times']), "games"
+    if On('progressbar'):
+        bar = ProgressProcess(settings['times'], settings['progressbar'])
+        #bar.setNewline()
+    if On('timers'):
+        timer = Timer(times)
     try:
-        if RECORD:
-            aidata = load()
-        players[1].setAIdata(aidata)
-        while 1:  # a == 'y' or a == 'Y':
-            play(players, statdata, games)
-            # a = raw_input("Play again? ")[0]
+        if On('times'):
+            for a in range(0, settings['times']):
+                play(players, statdata, games)
+                if On('progressbar'):
+                    bar.update(a)            
+            if On('progressbar'):
+                bar.success()
+                #del bar
+        else:
+            while (1):
+                play(players, statdata, games)
     except UserError:
         print "\nUser quit."
+    except KeyboardInterrupt:
+        print
+        if On('timers'):
+            timer.setItter(a)
     except:
+        if On('timers'):
+            timer.setItter(a)
         handleError()
-    if DISPLAYSTATS:
+    finally:
+        if On('times'):
+            print "Ran", a + 1, " times."
+    if On('timers'):
+        del timer
+    if On('lastfifteen'):
+        printGames(games)
+    if On('stats'):
         printStats(statdata)
-    if RECORD:
+    #printAIData(aidata)
+    if On('record'):
         aidata = players[1].aidata
         dump(aidata)
 
 
 if __name__ == "__main__":
     #players = [None, CompLearning(1), CompTwo(2)]
-    players = [None, CompTwo(1), Human(2)]
-    main(players)
+    #players = [None, CompTwo(1), Human(2)]
+    #players = [None, CompLearning(1), Human(1)]
+    # {'record': 1, 'stats': 1, 'lastfifteen': 1, 'timers': 1, \
+    # 'times': 100, 'progressbar': 50, 'gamegrids': 1, 'checkdata': 1}
+
+    #main(players, times=100, progressbar=60)
+    main([None, CompTwo(1), HumanNumber(2)])

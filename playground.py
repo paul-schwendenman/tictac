@@ -24,6 +24,8 @@ a = ProgressTimer(234, 60)
 
 def func(**args):
     print args
+    if 'a' in args and args['a'] == 1:
+        print "works"
 
 # * * * * * *
 # * Console *
