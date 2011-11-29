@@ -107,4 +107,54 @@ class ProgressProcess(ProgressTimer):
     def success(self):
         self.process.join()
         ProgressTimer.success(self)
+
+
+def demo():
+    from Timer import Timer
+    from time import sleep
+
+    def run(bar, max):
+        for a in range(0, max):
+            sleep(.001)
+            bar.update(a)
+
+
+    timer2 = Timer()
+
+    max = 3000
+
+
+    timer = Timer(max)
+    bar = ProgressBar(max, 50)
+    run(bar, max)
+    del bar
+    print
+    del timer
+
+
+    sleep(.125)
+
+    timer = Timer(max)
+    bar = ProgressTimer(max, 30)
+    run(bar, max)
+    del bar
+    print
+    del timer
+
+    sleep(.125)
+
+    timer = Timer(max)
+    bar = ProgressProcess(max, 25)
+    run(bar, max)
+    bar.success()
+    del bar
+    print
+    del timer
+    print
+
+
+if __name__ == '__main__':
+    print "Running demo of three progressbars and two timers:"
+    demo()
+
     
