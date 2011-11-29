@@ -201,10 +201,11 @@ class Comp(Player):
         from cPickle import dump
         b = open(self.filename, "w")
         dump(self.aidata, b)
-        print "aidata has %i items" % (len(a))
+        print "aidata has %i items" % (len(self.aidata))
         b.close()
     
     def dump(self):
+        self.record = 0
         self.dumpPickle()
     
     def __del__(self):
@@ -313,14 +314,15 @@ class CompLearning(Comp):
                 self.loadPickle()
             except:
                 pass
-        print "aidata has %i items" % (len(aidata))
+        print "aidata has %i items" % (len(self.aidata))
 
     def dump(self):
-        file = open(self.aidata, "w")
+        self.record = 0
+        file = open(self.filename + '2~', "w")
         grids = sorted(self.aidata.keys())
         for grid in grids:
             file.write(grid.toString() + "\t" + self.aidata[grid].toString() + "\n")
-        print "aidata has %i items" % (len(aidata))
+        print "aidata has %i items" % (len(self.aidata))
         file.close()
 
 
@@ -700,7 +702,6 @@ def getMove(n, grid, players, error=None):
     '''
     assert (n == 1) or (n == 2)
     move = players[n].getMove(grid, error)
-    print [type(sad) for sad in players]
     count = 0
     if move not in grid.getEmptySpaces():
         move = getMove(n, grid, players, move)
@@ -846,23 +847,16 @@ def analyzeStats(a, b):
 # * Main  *
 # * * * * *
 def play(players, statdata, games, On, **settings):
-    print "11"
     grid = Grid()
     winner = 0
     gamegrids = []
     player = 1
-    print "12"
     while winner == 0:
-        print "14"
         move = getMove(player, grid, players)
         gamegrids.append((grid[:], move, player))
-        copy = player
-        player = swapPlayer(player)
-        print copy, player
-        print "15"
         grid[move] = player
+        player = swapPlayer(player)
         winner = gameOver(grid)
-    print "13"
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
     pushGame(games, gamegrids)
@@ -879,7 +873,6 @@ def play(players, statdata, games, On, **settings):
                     
 
 def main(players, **settings):
-    print "1"
     def On(key):
         return key in settings and settings[key] != 0
     if On('timers'):
@@ -887,8 +880,6 @@ def main(players, **settings):
     #printAIData(aidata)
     statdata = [0, 0, 0, []]
     games = []
-    print "2"
-    players = [None, CompLearning(1), CompTwo(2)]
     if On('times'):
         print "Running", (settings['times']), "games"
     if On('progressbar'):
@@ -897,7 +888,6 @@ def main(players, **settings):
     if On('timers'):
         timer = Timer(times)
     try:
-        print "3"
         if On('times'):
             for a in range(0, settings['times']):
                 play(players, statdata, games, On)
@@ -907,7 +897,6 @@ def main(players, **settings):
                 bar.success()
                 #del bar
         else:
-            print "4"
             while (1):
                 play(players, statdata, games, On)
     except UserError:
@@ -933,11 +922,12 @@ def main(players, **settings):
 
 
 if __name__ == "__main__":
-    #players = [None, CompLearning(1), CompTwo(2)]
-    players = [None, CompTwo(1), Human(2)]
-    #players = [None, CompLearning(1), Human(1)]
+    players = [None, CompLearning(1, filename='data', record=1), CompTwo(2)]
+    #players = [None, CompTwo(1), Human(2)]
+    #players = [None, CompLearning(1, filename='data', record=1), Human(2)]
     # {'record': 1, 'stats': 1, 'lastfifteen': 1, 'timers': 1, \
     # 'times': 100, 'progressbar': 50, 'gamegrids': 1, 'checkdata': 1}
-    main(players, stats=1, lastfifteen=1)
-    #main(players, times=100, progressbar=60)
+    #main(players, stats=1, lastfifteen=1)
+    main(players, times=1, progressbar=60)
     #main([None, CompTwo(1), HumanNumber(2)])
+    del players
