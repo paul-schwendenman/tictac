@@ -66,33 +66,38 @@ class ProgressBar:
 
 
 from Timer import Timer, units
+
+
 class ProgressTimer(ProgressBar, Timer):
     def __init__(self, max, topbound=100, itter=None):
         ProgressBar.__init__(self, max, topbound)
         Timer.__init__(self)
         #self.peek = Timer.peek
         self.update2 = ProgressBar.update
-        
-        
+
     def update(self, current):
         if current != 0:
-            time = (self.peek() / current) * (self.max - current) 
+            time = (self.peek() / current) * (self.max - current)
             self.tail = " ETA: " + eta(time)
         self.update2(self, current)
 
+
 def eta(time):
     if int(time / 60) != 0:
-        return str(int(time / 60)) + "m " + str(int(time - int(time / 60) * 60)) + "s  "
-        
+        return str(int(time / 60)) + "m " + \
+               str(int(time - int(time / 60) * 60)) + "s  "
+
     else:
         unit = units(time, 1)
-        return str(int(time*unit[1])) + " " + unit[0] + "s  "
+        return str(int(time * unit[1])) + " " + unit[0] + "s  "
+
 
 class ProgressLock(ProgressTimer):
     def update(self, current, lock):
         lock.acquire()
         ProgressTimer.update(self, current)
         lock.release()
+
 
 class ProgressProcess(ProgressTimer):
     def __init__(self, *args):
@@ -101,7 +106,8 @@ class ProgressProcess(ProgressTimer):
         ProgressTimer.__init__(self, *args)
 
     def update(self, current):
-        self.process = self.Process(target=ProgressTimer.update, args=[self, current])
+        self.process = self.Process(target=ProgressTimer.update, \
+                                    args=[self, current])
         self.process.start()
 
     def success(self):
@@ -118,11 +124,9 @@ def demo():
             sleep(.001)
             bar.update(a)
 
-
     timer2 = Timer()
 
     max = 3000
-
 
     timer = Timer(max)
     bar = ProgressBar(max, 50)
@@ -130,7 +134,6 @@ def demo():
     del bar
     print
     del timer
-
 
     sleep(.125)
 
@@ -156,5 +159,3 @@ def demo():
 if __name__ == '__main__':
     print "Running demo of three progressbars and two timers:"
     demo()
-
-    

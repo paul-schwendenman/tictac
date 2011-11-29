@@ -25,6 +25,7 @@ AIADJUST = [{'win': 1, 'lose': -1, 'draw': 0, 'last': 2},
 USEDSPACE = -5      # This is used to adjust values for used spaces in grids
 RECURSIONCOUNT = 50        # Number of times to try and not pick a used move
 
+
 # * * * * * * * *
 # * Grid Class  *
 # * * * * * * * *
@@ -156,6 +157,7 @@ class HumanNumber(Human):
         print "Move:", a
         return a
 
+
 class Comp(Player):
     '''
     Base that all computer players have.
@@ -203,11 +205,11 @@ class Comp(Player):
         dump(self.aidata, b)
         print "aidata has %i items" % (len(self.aidata))
         b.close()
-    
+
     def dump(self):
         self.record = 0
         self.dumpPickle()
-    
+
     def __del__(self):
         if self.record:
             self.dump()
@@ -220,10 +222,11 @@ class CompPick(Comp):
     def getMove(self, grid, c):
         return pickOne(grid.getEmptySpaces())
 
+
 class CompTwo(Comp):
     '''
     Plays 'perfect' should finish wins and
-    should block moves. 
+    should block moves.
     '''
     def getMove(self, grid, c):
         one = ([item[1] for item in filter(filterLinesOne, \
@@ -321,10 +324,10 @@ class CompLearning(Comp):
         file = open(self.filename + '2~', "w")
         grids = sorted(self.aidata.keys())
         for grid in grids:
-            file.write(grid.toString() + "\t" + self.aidata[grid].toString() + "\n")
+            file.write(grid.toString() + "\t" + \
+                       self.aidata[grid].toString() + "\n")
         print "aidata has %i items" % (len(self.aidata))
         file.close()
-
 
 
 # * * * * * * * *
@@ -868,9 +871,9 @@ def play(players, statdata, games, On, **settings):
     for index in [1, 2]:
         handleGameOver(winner, gamegrids[:], index, players)
     if On('checkdata'):
-        printGameGridsValues(gamegrids, copy)  
+        printGameGridsValues(gamegrids, copy)
         printGameGridsValues(gamegrids, aidata)
-                    
+
 
 def main(players, **settings):
     def On(key):
@@ -892,7 +895,7 @@ def main(players, **settings):
             for a in range(0, settings['times']):
                 play(players, statdata, games, On)
                 if On('progressbar'):
-                    bar.update(a)            
+                    bar.update(a)
             if On('progressbar'):
                 bar.success()
                 #del bar
