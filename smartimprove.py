@@ -31,10 +31,10 @@ def worker(l, aidata, statdata, games):
     data = play(aidata, statdata, games)
     l.release()
 
+
 # * * * * * * * * * * * *
 # * Modified Functions  *
 # * * * * * * * * * * * *
-
 def playqq(aidata, statdata):
     grid = Grid()
     startingplayer = 1
@@ -46,7 +46,7 @@ def playqq(aidata, statdata):
         move = getMove(player, grid, aidata)
         gamegrids.append((grid[:], move, player))
         grid[move] = player
-        player = swapPlayer(player)        
+        player = swapPlayer(player)
         winner, row = gameOver(grid)
     gamegrids.append((grid[:], move, player))
     analyzeStats(winner, statdata)
@@ -61,9 +61,9 @@ def playqq(aidata, statdata):
     return aidata, statdata
 
 
-# * * * * * 
-# * Main  * 
-# * * * * * 
+# * * * * *
+# * Main  *
+# * * * * *
 DEBUG = 0
 
 if __name__ == '__main__':
@@ -85,13 +85,14 @@ if __name__ == '__main__':
         for a in range(0, times):
                 #pool.apply_async(worker, [queue, aidata, statdata])
                 #p = Process(target=play, args=[aidata, statdata, games])
-                p = Process(target=worker, args=[lock, aidata, statdata, games])
+                p = Process(target=worker, args=[lock, \
+                    aidata, statdata, games])
                 p.start()
                 p.join()
                 #pool.apply_async(play, [aidata, statdata])
                 #play(aidata, statdata)
                 if PROGRESSBAR:
-                    bar.update(a)            
+                    bar.update(a)
         if PROGRESSBAR:
             bar.success()
             del bar
@@ -109,7 +110,7 @@ if __name__ == '__main__':
     #import time
     #time.sleep(.1)
     pool.close()
-    pool.terminate()    
+    pool.terminate()
     pool.join()
 
     if PRINTLASTFIFTEEN:
