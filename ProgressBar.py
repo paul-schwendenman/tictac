@@ -78,7 +78,10 @@ class ProgressTimer(ProgressBar, Timer):
     def update(self, current):
         if current != 0:
             time = (self.peek() / current) * (self.max - current)
-            self.tail = " ETA: " + eta(time)
+            if self.max > current:
+                self.tail = " ETA: " + eta(time)
+            else:
+                self.tail = '\t'
         self.update2(self, current)
 
 
