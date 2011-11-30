@@ -321,7 +321,7 @@ class CompLearning(Comp):
 
     def dump(self):
         self.record = 0
-        file = open(self.filename + '2~', "w")
+        file = open(self.filename, "w")
         grids = sorted(self.aidata.keys())
         for grid in grids:
             file.write(grid.toString() + "\t" + \
@@ -931,6 +931,6 @@ if __name__ == "__main__":
     # {'record': 1, 'stats': 1, 'lastfifteen': 1, 'timers': 1, \
     # 'times': 100, 'progressbar': 50, 'gamegrids': 1, 'checkdata': 1}
     #main(players, stats=1, lastfifteen=1)
-    main(players, times=1, progressbar=60)
+    main(players, times=4, progressbar=60)
     #main([None, CompTwo(1), HumanNumber(2)])
     del players
