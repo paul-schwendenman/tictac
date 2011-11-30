@@ -8,14 +8,15 @@ console = 1
 # * Imports *
 # * * * * * *
 import tictac
-from tictac import Grid, printXO, handleError, pickOne, gameOver, translateGridMax
+from tictac import Grid, printXO, handleError
+from tictac import pickOne, gameOver, translateGridMax
 from ProgressBar import ProgressProcess
 from Timer import Timer, units
+
 
 # * * * * * *
 # * Code    *
 # * * * * * *
-
 def func(**args):
     print args
     if 'a' in args and args['a'] == 1:
@@ -33,23 +34,29 @@ for a in [0, 1, 2]:
                         for g in [0, 1, 2]:
                             for h in [0, 1, 2]:
                                 for i in [0, 1, 2]:
-                                    grids.append(Grid([a, b, c, d, e, f, g, h, i]))
+                                    grids.append(Grid([a, b, c, d, \
+                                                       e, f, g, h, i]))
 print "Total possible games:", len(grids), "\n\t",
 del timer
 
+
 def everyother(grid):
     return (abs(grid.count(1) - grid.count(2)) <= 1)
+
+
 def everyother_one(grid):
     return (grid.count(1) - grid.count(2) in [0, 1])
+
+
 def everyother_two(grid):
     return (grid.count(1) - grid.count(2) in [0, -1])
-
 
 
 timer = Timer(len(grids))
 grids = (filter(everyother_one, grids))
 print "With proper alternation:", len(grids), "\n\t",
 del timer
+
 
 def filterGameOver(grid, y=None):
     try:
@@ -67,22 +74,7 @@ getOneType_One = lambda grid: filterGameOver(grid, 1)
 getOneType_None = lambda grid: filterGameOver(grid, 0)
 getOneType_Tie = lambda grid: filterGameOver(grid, -1)
 getOneType_Two = lambda grid: filterGameOver(grid, 2)
-'''
-getOneType = [getOneType_(Grid, 0), getOneType_(Grid, 1), getOneType_(Grid, 2), getOneType_(Grid, -1)]
-getOneType_One = getOneType[1]
-getOneType_None = getOneType[0]
-getOneType_Tie = getOneType[-1]
-getOneType_Two = getOneType[2]
 
-getOneType_One = deepcopy(getOneType_)
-getOneType_One.func_defaults = (1,)
-getOneType_Two = deepcopy(getOneType_)
-getOneType_Two.func_defaults = (2,)
-getOneType_Tie = deepcopy(getOneType_)
-getOneType_Tie.func_defaults = (-1,)
-getOneType_None = deepcopy(getOneType_)
-getOneType_None.func_defaults = (0,)
-'''
 timer = Timer(len(grids))
 grids = (filter(filterGameOver, grids))
 print "No more than one winner:", len(grids), '\n\t',
@@ -96,15 +88,17 @@ del timer
 #gridsset = grids1 & grids2 & grids3
 print "And together now...", len(grids)
 
+
 def po(aa=grids):
     printXO(pickOne(aa))
-        
+
 timer = Timer()
 aa = filter(getOneType_One, grids)
 bb = filter(getOneType_Two, grids)
 cc = filter(getOneType_Tie, grids)
 dd = filter(getOneType_None, grids)
-print "Wins %i, Losses %i, Ties %i, Rest %i" % (len(aa), len(bb), len(cc), len(dd)), "\n\t",
+print "Wins", len(aa), "Losses", len(bb), "Ties", len(cc), "Rest", len(dd)
+print "\t",
 del timer
 
 '''
