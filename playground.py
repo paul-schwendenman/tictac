@@ -51,56 +51,40 @@ grids = (filter(everyother_one, grids))
 print "With proper alternation:", len(grids), "\n\t",
 del timer
 
-def onewin(grid):
-    try:
-        gameOver(grid)
-    except:
-        return 0
-    else:
-        return 1
-def getOneType_One(grid):
+def filterGameOver(grid, y=None):
     try:
         x = gameOver(grid)
     except:
         return 0
     else:
-        if x == 1:
+        if y == None:
+            return 1
+        elif x == y:
             return 1
         else:
             return 0
-def getOneType_Two(grid):
-    try:
-        x = gameOver(grid)
-    except:
-        return 0
-    else:
-        if x == 2:
-            return 1
-        else:
-            return 0
-def getOneType_Tie(grid):
-    try:
-        x = gameOver(grid)
-    except:
-        return 0
-    else:
-        if x == -1:
-            return 1
-        else:
-            return 0
-def getOneType_None(grid):
-    try:
-        x = gameOver(grid)
-    except:
-        return 0
-    else:
-        if x == 0:
-            return 1
-        else:
-            return 0
-            
+getOneType_One = lambda grid: filterGameOver(grid, 1)
+getOneType_None = lambda grid: filterGameOver(grid, 0)
+getOneType_Tie = lambda grid: filterGameOver(grid, -1)
+getOneType_Two = lambda grid: filterGameOver(grid, 2)
+'''
+getOneType = [getOneType_(Grid, 0), getOneType_(Grid, 1), getOneType_(Grid, 2), getOneType_(Grid, -1)]
+getOneType_One = getOneType[1]
+getOneType_None = getOneType[0]
+getOneType_Tie = getOneType[-1]
+getOneType_Two = getOneType[2]
+
+getOneType_One = deepcopy(getOneType_)
+getOneType_One.func_defaults = (1,)
+getOneType_Two = deepcopy(getOneType_)
+getOneType_Two.func_defaults = (2,)
+getOneType_Tie = deepcopy(getOneType_)
+getOneType_Tie.func_defaults = (-1,)
+getOneType_None = deepcopy(getOneType_)
+getOneType_None.func_defaults = (0,)
+'''
 timer = Timer(len(grids))
-grids = (filter(onewin, grids))
+grids = (filter(filterGameOver, grids))
 print "No more than one winner:", len(grids), '\n\t',
 del timer
 
