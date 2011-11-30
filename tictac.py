@@ -330,6 +330,41 @@ class CompLearning(Comp):
         file.close()
 
 
+class CompTree(Comp):
+    def getMove(self, grid, error):
+        assert error == None
+        grid, trans = translateMax(grid)
+        if grid in self.aidata:
+            move = followTree(grid)
+        else:
+            move = pickOne(a.emptySpaces())
+        return move
+
+    def followTree(self, grid):
+        if grid in self.aidata and type(self.aidata[grid]) == type(1):
+            return self.aidata[grid]
+        else:
+            for g in self.aidata[grid]:
+                # should get list of children and parse results
+                pass
+
+    def handleGameOver(self, winner, grids):
+        grids = grids[2 - self.index:: 2]
+        grids.reverse()
+        while len(grids) > 1:
+            grid = translateMax(grids.pop())[0]
+            if grid in self.aidata:
+                self.aidata[grid].append(translateMax(grids[-1])[0])
+            else:
+                self.aidata[grid] = [translateMax(grids[-1])[0]]
+        assert len(grids) == 1
+        grid = translateMax(grids.pop())[0]
+        if grid not in self.aidata:
+            self.aidata[grid] = winner
+        else:
+            assert self.aidata[grid] == winner
+
+
 # * * * * * * * *
 # * UserError   *
 # * * * * * * * *
