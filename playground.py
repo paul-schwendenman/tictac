@@ -39,10 +39,16 @@ del timer
 
 def everyother(grid):
     return (abs(grid.count(1) - grid.count(2)) <= 1)
+def everyother_one(grid):
+    return (grid.count(1) - grid.count(2) in [0, 1])
+def everyother_two(grid):
+    return (grid.count(1) - grid.count(2) in [0, -1])
+
+
 
 timer = Timer(len(grids))
-grids1 = set(filter(everyother, grids))
-print "With proper alternation:", len(grids1), "\n\t",
+grids = (filter(everyother_one, grids))
+print "With proper alternation:", len(grids), "\n\t",
 del timer
 
 def onewin(grid):
@@ -52,22 +58,71 @@ def onewin(grid):
         return 0
     else:
         return 1
+def getOneType_One(grid):
+    try:
+        x = gameOver(grid)
+    except:
+        return 0
+    else:
+        if x == 1:
+            return 1
+        else:
+            return 0
+def getOneType_Two(grid):
+    try:
+        x = gameOver(grid)
+    except:
+        return 0
+    else:
+        if x == 2:
+            return 1
+        else:
+            return 0
+def getOneType_Tie(grid):
+    try:
+        x = gameOver(grid)
+    except:
+        return 0
+    else:
+        if x == -1:
+            return 1
+        else:
+            return 0
+def getOneType_None(grid):
+    try:
+        x = gameOver(grid)
+    except:
+        return 0
+    else:
+        if x == 0:
+            return 1
+        else:
+            return 0
+            
 timer = Timer(len(grids))
-grids2 = set(filter(onewin, grids))
-print "No more than one winner:", len(grids2), '\n\t',
+grids = (filter(onewin, grids))
+print "No more than one winner:", len(grids), '\n\t',
 del timer
 
 timer = Timer(len(grids))
-grids3 = set([translateGridMax(grid)[0] for grid in grids])
-print "Translations:", len(grids3), '\n\t',
+grids = list(set([translateGridMax(grid)[0] for grid in grids]))
+print "Translations:", len(grids), '\n\t',
 del timer
 
-gridsset = grids1 & grids2 & grids3
-print "And together now...", len(gridsset)
+#gridsset = grids1 & grids2 & grids3
+print "And together now...", len(grids)
 
 def po(aa=grids):
     printXO(pickOne(aa))
         
+timer = Timer()
+aa = filter(getOneType_One, grids)
+bb = filter(getOneType_Two, grids)
+cc = filter(getOneType_Tie, grids)
+dd = filter(getOneType_None, grids)
+print "Wins %i, Losses %i, Ties %i, Rest %i" % (len(aa), len(bb), len(cc), len(dd)), "\n\t",
+del timer
+
 '''
 bar = ProgressProcess(19683)
 count = 0
@@ -87,10 +142,12 @@ print len(grids2)
 
 while console:
     try:
-        print
         input = raw_input(">> ")
-        exec(input)
     except EOFError, KeyboardInterrupt:
         break
+    timer = Timer()
+    try:
+        exec(input)
     except:
         handleError()
+    del timer
