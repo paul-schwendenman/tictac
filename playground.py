@@ -16,9 +16,6 @@ from Timer import Timer, units
 # * Code    *
 # * * * * * *
 
-a = Grid([1, 1, 0, 2, 0, 2, 0, 1, 1])
-printXO(a)
-
 def func(**args):
     print args
     if 'a' in args and args['a'] == 1:
@@ -43,13 +40,10 @@ del timer
 def everyother(grid):
     return (abs(grid.count(1) - grid.count(2)) <= 1)
 
-timer = Timer(19683)
-timer2 = Timer(8953)
-grids = filter(everyother, grids)
-print "With proper alternation:", len(grids), "\n\t",
+timer = Timer(len(grids))
+grids1 = set(filter(everyother, grids))
+print "With proper alternation:", len(grids1), "\n\t",
 del timer
-print "\t",
-del timer2
 
 def onewin(grid):
     try:
@@ -58,22 +52,21 @@ def onewin(grid):
         return 0
     else:
         return 1
-timer = Timer(8953)
-timer2 = Timer(8725)
-grids = filter(onewin, grids)
-print "No more than one winner:", len(grids), '\n\t',
-del timer
-print "\t",
-del timer2
-
-timer = Timer(8725)
-grids = list(set([translateGridMax(grid)[0] for grid in grids]))
-print "Translations:", len(grids), '\n\t',
+timer = Timer(len(grids))
+grids2 = set(filter(onewin, grids))
+print "No more than one winner:", len(grids2), '\n\t',
 del timer
 
+timer = Timer(len(grids))
+grids3 = set([translateGridMax(grid)[0] for grid in grids])
+print "Translations:", len(grids3), '\n\t',
+del timer
 
-def po():
-    printXO(pickOne(grids))
+gridsset = grids1 & grids2 & grids3
+print "And together now...", len(gridsset)
+
+def po(aa=grids):
+    printXO(pickOne(aa))
         
 '''
 bar = ProgressProcess(19683)
@@ -96,8 +89,7 @@ while console:
     try:
         print
         input = raw_input(">> ")
-        exec(input, out)
-        print out
+        exec(input)
     except EOFError, KeyboardInterrupt:
         break
     except:
