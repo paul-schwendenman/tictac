@@ -58,6 +58,10 @@ class Grid(UserList):
         return ':'.join([("      " + str(a))[pick(-4, -len(str(a))):] \
                for a in self.data])
 
+    def __sub__(self, other):
+        assert len(self.data) == len(self.data)
+        return Grid([self.data[index] - other[index] for index in range(0, len(self.data))])
+
     def fromString(self, a):
         self.data = [int(b) for b in a.split(':')]
 
@@ -332,33 +336,55 @@ class CompLearning(Comp):
 
 class CompTree(Comp):
     def getMove(self, grid, error):
+        if error:
+            print "Error:", error, grid
         assert error == None
-        grid, trans = translateMax(grid)
+        gridmax, trans = translateGridMax(grid)
         if grid in self.aidata:
-            move = followTree(grid)
+            print "Tree"
+            move = followTree(gridmax)
         else:
-            move = pickOne(a.emptySpaces())
-        return move
+            print "Pick"
+            move = pickOne(gridmax.getEmptySpaces())
+        #if move not in grid.getEmptySpaces():
+        move2 = translateGridReverse(range(0, 9), trans)[move]
+        print translateGridReverse(gridmax, trans), move, move2, trans
+        print grid, grid.getEmptySpaces()
+        print gridmax, gridmax.getEmptySpaces()
+        return move2
 
     def followTree(self, grid):
         if grid in self.aidata and type(self.aidata[grid]) == type(1):
-            return self.aidata[grid]
+            return (None, self.aidata[grid]) 
+        elif len(self.aidata[grid]) > 1:
+            results = []
+            for each in self.aidata[grid]:
+                results.append(((each - grid).index(self.index), \
+                                 followTree(each),))
+            moves = [s for s in filter(lambda a: a[1] == self.index, results)]
+            if not moves:
+                moves = [s for s in filter(lambda a: a[1] == -1, results)]
+                if not moves:
+                    moves = [s for s in filter(lambda a: a[1] == 0, results)]
+                    if not moves:
+                        moves = [s for s in filter(lambda a: a[1] not in \
+                                 [-1, 0, self.index], results)]
+            return pickOne(moves)
         else:
-            for g in self.aidata[grid]:
-                # should get list of children and parse results
-                pass
-
+            return ((self.aidata[grid][0] - grid).index(self.index), \
+                     followTree(self.aidata[0][grid]),)
+            pass
     def handleGameOver(self, winner, grids):
         grids = grids[2 - self.index:: 2]
         grids.reverse()
         while len(grids) > 1:
-            grid = translateMax(grids.pop())[0]
+            grid = translateGridMax(grids.pop()[0])[0]
             if grid in self.aidata:
-                self.aidata[grid].append(translateMax(grids[-1])[0])
+                self.aidata[grid].append(translateGridMax(grids[-1][0])[0])
             else:
-                self.aidata[grid] = [translateMax(grids[-1])[0]]
+                self.aidata[grid] = [translateGridMax(grids[-1][0])[0]]
         assert len(grids) == 1
-        grid = translateMax(grids.pop())[0]
+        grid = translateGridMax(grids.pop()[0])[0]
         if grid not in self.aidata:
             self.aidata[grid] = winner
         else:
@@ -960,12 +986,14 @@ def main(players, **settings):
 
 
 if __name__ == "__main__":
-    players = [None, CompLearning(1, filename='data', record=1), CompTwo(2)]
+    #players = [None, CompLearning(1, filename='data', record=1), CompTwo(2)]
+    players = [None, CompTree(1, filename='datatree', record=1), Human(2)]
     #players = [None, CompTwo(1), Human(2)]
     #players = [None, CompLearning(1, filename='data', record=1), Human(2)]
     # {'record': 1, 'stats': 1, 'lastfifteen': 1, 'timers': 1, \
     # 'times': 100, 'progressbar': 50, 'gamegrids': 1, 'checkdata': 1}
     #main(players, stats=1, lastfifteen=1)
-    main(players, times=4, progressbar=60)
+    #main(players, times=4, progressbar=60, lastfifteen=1)
+    main(players, lastfifteen=1, stats=1)
     #main([None, CompTwo(1), HumanNumber(2)])
     del players

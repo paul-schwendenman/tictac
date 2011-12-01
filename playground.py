@@ -17,6 +17,7 @@ from Timer import Timer, units
 # * * * * * *
 # * Code    *
 # * * * * * *
+'''
 def func(**args):
     print args
     if 'a' in args and args['a'] == 1:
@@ -100,20 +101,18 @@ dd = filter(getOneType_None, grids)
 print "Wins", len(aa), "Losses", len(bb), "Ties", len(cc), "Rest", len(dd)
 print "\t",
 del timer
-
-'''
-bar = ProgressProcess(19683)
-count = 0
-for grid in grids2:
-    count += 1
-    bar.update(count)
-    while grids2.count(grid) > 1:
-        grids2.remove(grid)
-bar.success()
-print len(grids2)
 '''
 
-
+a = Grid([0, 1, 0, 0, 0, 0, 1, 2, 1])
+b = a[:]
+b[3]=2
+b[4]=1
+# b = Grid([0, 1, 0, 2, 1, 0, 0, 0, 0])
+printXO(a)
+printXO(b)
+printXO(b-a)
+print "Move for 1 was:", (b-a).index(1)
+print "Move for 2 was:", (b-a).index(2)
 # * * * * * *
 # * Console *
 # * * * * * *
