@@ -336,21 +336,22 @@ class CompLearning(Comp):
 
 class CompTree(Comp):
     def getMove(self, grid, error):
-        if error:
-            print "Error:", error, grid
+        printXO(grid)
+        print "Error:", error, grid
         assert error == None
         gridmax, trans = translateGridMax(grid)
         if grid in self.aidata:
             print "Tree"
             move = followTree(gridmax)
         else:
-            print "Pick"
-            move = pickOne(gridmax.getEmptySpaces())
+            print "Pick from"
+            move = gridmax.getEmptySpaces()[0]
+            #move = pickOne(gridmax.getEmptySpaces())
         #if move not in grid.getEmptySpaces():
         move2 = translateGridReverse(range(0, 9), trans)[move]
-        print translateGridReverse(gridmax, trans), move, move2, trans
-        print grid, grid.getEmptySpaces()
-        print gridmax, gridmax.getEmptySpaces()
+        print trans
+        print gridmax, Grid(range(0, 9)), gridmax.getEmptySpaces(), move
+        print grid, translateGridReverse(range(0, 9), trans), grid.getEmptySpaces(), move2
         return move2
 
     def followTree(self, grid):
@@ -406,6 +407,11 @@ def printXO(b):
     Prints the tictactoe grid with XOs
     '''
     printGrid(b.returnXO())
+
+
+def printNine(a):
+    print "%2i %2i %2i\n%2i %2i %2i\n%2i %2i %2i\n" % (a[0], a[1], a[2], \
+          a[3], a[4], a[5], a[6], a[7], a[8])
 
 
 def printGrid(a):
@@ -962,7 +968,7 @@ def main(players, **settings):
                 #del bar
         else:
             while (1):
-                play(players, statdata, games, On)
+                play(players, statdata, games, On, **settings)
     except UserError:
         print "\nUser quit."
     except KeyboardInterrupt:
@@ -987,13 +993,12 @@ def main(players, **settings):
 
 if __name__ == "__main__":
     #players = [None, CompLearning(1, filename='data', record=1), CompTwo(2)]
-    players = [None, CompTree(1, filename='datatree', record=1), Human(2)]
+    players = [None, CompTree(1, filename='datatree', record=0), CompTwo(2)]
     #players = [None, CompTwo(1), Human(2)]
     #players = [None, CompLearning(1, filename='data', record=1), Human(2)]
     # {'record': 1, 'stats': 1, 'lastfifteen': 1, 'timers': 1, \
     # 'times': 100, 'progressbar': 50, 'gamegrids': 1, 'checkdata': 1}
     #main(players, stats=1, lastfifteen=1)
     #main(players, times=4, progressbar=60, lastfifteen=1)
-    main(players, lastfifteen=1, stats=1)
+    main(players, times=15, lastfifteen=1, stats=1, gamegrids=1)
     #main([None, CompTwo(1), HumanNumber(2)])
-    del players

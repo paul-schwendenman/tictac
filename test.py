@@ -129,11 +129,6 @@ def testGetMove():
 print "Test Load, Dump"
 
 
-def printNine(a):
-    print "%2i %2i %2i\n%2i %2i %2i\n%2i %2i %2i\n" % (a[0], a[1], a[2], \
-          a[3], a[4], a[5], a[6], a[7], a[8])
-
-
 def testLoad():
     print "Load"
     a = load()

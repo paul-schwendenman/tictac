@@ -102,17 +102,16 @@ print "Wins", len(aa), "Losses", len(bb), "Ties", len(cc), "Rest", len(dd)
 print "\t",
 del timer
 '''
+from tictac import translateArray, translateGridReverse, printGrids, printNine
+a = range(0, 9)
+b = translateArray(a)
+for d in range(0, 7):
+    c = translateArray(b[d])
+    printGrids([a, translateGridReverse(b[d], d), Grid(), b[d], c[d]])
+    printGrids(b)
+    printGrids(c)
 
-a = Grid([0, 1, 0, 0, 0, 0, 1, 2, 1])
-b = a[:]
-b[3]=2
-b[4]=1
-# b = Grid([0, 1, 0, 2, 1, 0, 0, 0, 0])
-printXO(a)
-printXO(b)
-printXO(b-a)
-print "Move for 1 was:", (b-a).index(1)
-print "Move for 2 was:", (b-a).index(2)
+
 # * * * * * *
 # * Console *
 # * * * * * *
