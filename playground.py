@@ -2,7 +2,7 @@
 # * Globals *
 # * * * * * *
 
-console = 1
+console = 0
 
 # * * * * * *
 # * Imports *
@@ -105,7 +105,8 @@ del timer
 from tictac import translateArray, translateGridReverse, printGrids, printNine
 a = range(0, 9)
 b = translateArray(a)
-for d in range(0, 7):
+for d in range(0, 8):
+    print "-" * 13, d, '-' * 13
     c = translateArray(b[d])
     printGrids([a, translateGridReverse(b[d], d), Grid(), b[d], c[d]])
     printGrids(b)

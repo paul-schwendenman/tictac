@@ -348,11 +348,7 @@ class CompTree(Comp):
             move = gridmax.getEmptySpaces()[0]
             #move = pickOne(gridmax.getEmptySpaces())
         #if move not in grid.getEmptySpaces():
-        move2 = translateGridReverse(range(0, 9), trans)[move]
-        print trans
-        print gridmax, Grid(range(0, 9)), gridmax.getEmptySpaces(), move
-        print grid, translateGridReverse(range(0, 9), trans), grid.getEmptySpaces(), move2
-        return move2
+        return translateGridReverse(range(0, 9), trans).index(move)
 
     def followTree(self, grid):
         if grid in self.aidata and type(self.aidata[grid]) == type(1):
