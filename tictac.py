@@ -339,7 +339,8 @@ class CompTree(Comp):
         if error != None:
             print "Error:", error, grid
         assert error == None
-        gridmax, trans = translateGridMax(grid)
+        #gridmax, trans = translateGridMax(grid)
+        gridmax = grid
         if gridmax in self.aidata:
             print "Tree"
             print "=" * 4
@@ -355,21 +356,24 @@ class CompTree(Comp):
         #if move not in grid.getEmptySpaces():
         print "Translation Checking:"
         print "=" * 21
+        print "\tDisabled"
+        '''
         move2 = translateGridReverse(range(0, 9), trans)[move]
         print trans
         print gridmax, Grid(range(0, 9)), gridmax.getEmptySpaces(), move
         print grid, translateGridReverse(range(0, 9), trans), grid.getEmptySpaces(), move2
-        
+        '''
         print "Move checking:"
         print "=" * 14
         print gridmax
         griiids = sorted(self.aidata.keys())
         for griiid in griiids:
-            print griiid, self.aidata[griiid]
+            print "\t", griiid, self.aidata[griiid]
         print "-" * 45
-        return translateGridReverse(range(0, 9), trans).index(move)
+        return move
+        #return translateGridReverse(range(0, 9), trans).index(move)
 
-    def followTree(self, grid):
+    def followTree(self, grid, **settings):
         if grid in self.aidata and type(self.aidata[grid]) == type(1):
             return (None, self.aidata[grid]) 
         elif len(self.aidata[grid]) > 1:
@@ -387,27 +391,37 @@ class CompTree(Comp):
                                  [-1, 0, self.index], results)]
             return pickOne(moves)
         else:
-            print "Catch Error"
-            print self.aidata[grid][0], grid,(self.aidata[grid][0] - grid)
-            print (self.index),
-            print self.followTree(self.aidata[grid][0])
+            if 'tabs' not in settings:
+                settings['tabs'] = 0
+            print '\t' * settings['tabs'], "Catch Error"
+            print '\t' * settings['tabs'], self.aidata[grid][0], grid, (self.aidata[grid][0] - grid), (self.index),
+            print self.followTree(self.aidata[grid][0], tabs=(settings['tabs'] + 1))
             return ((self.aidata[grid][0] - grid).index(self.index), \
                      self.followTree(self.aidata[grid][0]),)
 
     def handleGameOver(self, winner, grids):
         grids = grids[self.index - 1:: 2]
         printGameGrids(grids)
-        printGrids([grids[i][0] - grids[i-1][0] for i in range(1, len(grids))]) 
-            
+        print [(grids[i][0] - grids[i-1][0]).index(self.index) if self.index in (grids[i][0] - grids[i-1][0]) else (grids[i][0] - grids[i-1][0]) for i in range(1, len(grids))]
+        printGameGrids([(grids[i][0] - grids[i-1][0], 2) for i in range(1, len(grids))]) 
+        maxgrids = [translateGridMax(grid[0]) for grid in grids]
+        printGameGrids(maxgrids)
+        print [(maxgrids[i][0] - maxgrids[i-1][0]).index(self.index) if self.index in (maxgrids[i][0] - maxgrids[i-1][0]) else (maxgrids[i][0] - maxgrids[i-1][0]) for i in range(1, len(maxgrids))]
+        print [(maxgrids[i][0] - maxgrids[i-1][0]) for i in range(1, len(maxgrids))]
+        printGameGrids([(maxgrids[i][0] - maxgrids[i-1][0], 2) for i in range(1, len(maxgrids))]) 
         grids.reverse()
         while len(grids) > 1:
-            grid = translateGridMax(grids.pop()[0])[0]
+            #grid = translateGridMax(grids.pop()[0])[0]
+            grid = (grids.pop()[0])
             if grid in self.aidata:
-                self.aidata[grid].append(translateGridMax(grids[-1][0])[0])
+                #self.aidata[grid].append(translateGridMax(grids[-1][0])[0])
+                self.aidata[grid].append((grids[-1][0]))
             else:
-                self.aidata[grid] = [translateGridMax(grids[-1][0])[0]]
+                #self.aidata[grid] = [translateGridMax(grids[-1][0])[0]]
+                self.aidata[grid] = [(grids[-1][0])]
         assert len(grids) == 1
-        grid = translateGridMax(grids.pop()[0])[0]
+        #grid = translateGridMax(grids.pop()[0])[0]
+        grid = grids.pop()[0]
         if grid not in self.aidata:
             self.aidata[grid] = winner
         else:
@@ -1022,5 +1036,5 @@ if __name__ == "__main__":
     # 'times': 100, 'progressbar': 50, 'gamegrids': 1, 'checkdata': 1}
     #main(players, stats=1, lastfifteen=1)
     #main(players, times=4, progressbar=60, lastfifteen=1)
-    main(players, times=20, lastfifteen=1, stats=1)
+    main(players, times=2, lastfifteen=1, stats=1)
     #main([None, CompTwo(1), HumanNumber(2)])
