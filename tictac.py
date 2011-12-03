@@ -336,18 +336,37 @@ class CompLearning(Comp):
 
 class CompTree(Comp):
     def getMove(self, grid, error):
-        printXO(grid)
-        print "Error:", error, grid
+        if error != None:
+            print "Error:", error, grid
         assert error == None
         gridmax, trans = translateGridMax(grid)
-        if grid in self.aidata:
+        if gridmax in self.aidata:
             print "Tree"
-            move = followTree(gridmax)
+            print "=" * 4
+            move = self.followTree(gridmax)
+            print "Moves:", move
+            move = move[0]
         else:
-            print "Pick from"
+            print "Pick"
             move = gridmax.getEmptySpaces()[0]
             #move = pickOne(gridmax.getEmptySpaces())
+            print "Move:", move
+
         #if move not in grid.getEmptySpaces():
+        print "Translation Checking:"
+        print "=" * 21
+        move2 = translateGridReverse(range(0, 9), trans)[move]
+        print trans
+        print gridmax, Grid(range(0, 9)), gridmax.getEmptySpaces(), move
+        print grid, translateGridReverse(range(0, 9), trans), grid.getEmptySpaces(), move2
+        
+        print "Move checking:"
+        print "=" * 14
+        print gridmax
+        griiids = sorted(self.aidata.keys())
+        for griiid in griiids:
+            print griiid, self.aidata[griiid]
+        print "-" * 45
         return translateGridReverse(range(0, 9), trans).index(move)
 
     def followTree(self, grid):
@@ -357,7 +376,7 @@ class CompTree(Comp):
             results = []
             for each in self.aidata[grid]:
                 results.append(((each - grid).index(self.index), \
-                                 followTree(each),))
+                                 self.followTree(each),))
             moves = [s for s in filter(lambda a: a[1] == self.index, results)]
             if not moves:
                 moves = [s for s in filter(lambda a: a[1] == -1, results)]
@@ -368,11 +387,18 @@ class CompTree(Comp):
                                  [-1, 0, self.index], results)]
             return pickOne(moves)
         else:
+            print "Catch Error"
+            print self.aidata[grid][0], grid,(self.aidata[grid][0] - grid)
+            print (self.index),
+            print self.followTree(self.aidata[grid][0])
             return ((self.aidata[grid][0] - grid).index(self.index), \
-                     followTree(self.aidata[0][grid]),)
-            pass
+                     self.followTree(self.aidata[grid][0]),)
+
     def handleGameOver(self, winner, grids):
-        grids = grids[2 - self.index:: 2]
+        grids = grids[self.index - 1:: 2]
+        printGameGrids(grids)
+        printGrids([grids[i][0] - grids[i-1][0] for i in range(1, len(grids))]) 
+            
         grids.reverse()
         while len(grids) > 1:
             grid = translateGridMax(grids.pop()[0])[0]
@@ -996,5 +1022,5 @@ if __name__ == "__main__":
     # 'times': 100, 'progressbar': 50, 'gamegrids': 1, 'checkdata': 1}
     #main(players, stats=1, lastfifteen=1)
     #main(players, times=4, progressbar=60, lastfifteen=1)
-    main(players, times=15, lastfifteen=1, stats=1, gamegrids=1)
+    main(players, times=20, lastfifteen=1, stats=1)
     #main([None, CompTwo(1), HumanNumber(2)])
