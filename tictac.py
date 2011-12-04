@@ -893,7 +893,7 @@ def adjustAI(winner, gamegrids, index, aidata):
             l = 1
 
         translatedscores[move] += k * l
-        adjustedscores = Translate.Grid(Translate.dscores, translation)
+        adjustedscores = Translate.Grid(translatedscores, translation)
         aidata[maxgrid] = adjustedscores
         if DEBUG or DEBUGFUNC:
             print "*" * 30
