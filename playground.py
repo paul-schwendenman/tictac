@@ -9,7 +9,7 @@ console = 0
 # * * * * * *
 import tictac
 from tictac import Grid, printXO, handleError
-from tictac import pickOne, gameOver, translateGridMax
+from tictac import pickOne, gameOver, Translate
 from ProgressBar import ProgressProcess
 from Timer import Timer, units
 
@@ -82,7 +82,7 @@ print "No more than one winner:", len(grids), '\n\t',
 del timer
 
 timer = Timer(len(grids))
-grids = list(set([translateGridMax(grid)[0] for grid in grids]))
+grids = list(set([Translate.GridMax(grid)[0] for grid in grids]))
 print "Translations:", len(grids), '\n\t',
 del timer
 
@@ -102,13 +102,13 @@ print "Wins", len(aa), "Losses", len(bb), "Ties", len(cc), "Rest", len(dd)
 print "\t",
 del timer
 '''
-from tictac import translateArray, translateGridReverse, printGrids, printNine
+from tictac import printGrids, printNine
 a = range(0, 9)
-b = translateArray(a)
+b = Translate.Array(a)
 for d in range(0, 8):
     print "-" * 13, d, '-' * 13
-    c = translateArray(b[d])
-    printGrids([a, translateGridReverse(b[d], d), Grid(), b[d], c[d]])
+    c = Translate.Array(b[d])
+    printGrids([a, Translate.GridReverse(b[d], d), Grid(), b[d], c[d]])
     printGrids(b)
     printGrids(c)
 

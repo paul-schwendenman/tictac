@@ -30,6 +30,9 @@ RECURSIONCOUNT = 50        # Number of times to try and not pick a used move
 # * Grid Class  *
 # * * * * * * * *
 class Grid(UserList):
+    '''
+    The Basic 3 by 3 grid
+    '''
     def __init__(self, initlist=None):
         # From the userlist
         self.data = []
@@ -81,7 +84,7 @@ class Grid(UserList):
     def __hash__(self):
         # Okay to hash despite being mutable, hash reveals state not variable
         #return int(self.__str__())
-        return translateHash(self)
+        return Translate.Hash(self)
 
 
 # * * * * * * * * *
@@ -263,13 +266,13 @@ class CompLearning(Comp):
         DEBUGFUNC = 0
         if grid.count(0) == len(grid):
             return pickOne([pickOne([0, 2, 6, 8]), pickOne([1, 3, 5, 7]), 4])
-        b = translateGridMax(grid)
+        b = Translate.GridMax(grid)
         if DEBUG or DEBUGFUNC:
             printXO(grid)
             printXO(b[0])
         if error != None:
             f = [0, 1, 2, 3, 4, 5, 6, 7, 8, ]
-            e = translateGridReverse(f, b[1])[error]
+            e = Translate.GridReverse(f, b[1])[error]
             if DEBUG or DEBUGFUNC:
                 print "Invalid Computer Move:"
                 print "\t error:", error, "\t e:", e, "\t b[1]:", b[1]
@@ -278,7 +281,7 @@ class CompLearning(Comp):
             if DEBUG or DEBUGFUNC:
                 print "\nAfter:"
                 print "\t self.aidata[b[0]]:", self.aidata[b[0]].toString()
-        d = translateGetMove(grid, self.aidata)
+        d = Translate.GetMove(grid, self.aidata)
 
         if error == d and d != None and error != None:
             raise ValueError("error = d")
@@ -339,7 +342,7 @@ class CompTree(Comp):
         if error != None:
             print "Error:", error, grid
         assert error == None
-        #gridmax, trans = translateGridMax(grid)
+        #gridmax, trans = Translate.GridMax(grid)
         gridmax = grid
         if gridmax in self.aidata:
             print "Tree"
@@ -358,10 +361,10 @@ class CompTree(Comp):
         print "=" * 21
         print "\tDisabled"
         '''
-        move2 = translateGridReverse(range(0, 9), trans)[move]
+        move2 = Translate.GridReverse(range(0, 9), trans)[move]
         print trans
         print gridmax, Grid(range(0, 9)), gridmax.getEmptySpaces(), move
-        print grid, translateGridReverse(range(0, 9), trans), grid.getEmptySpaces(), move2
+        print grid, Translate.GridReverse(range(0, 9), trans), grid.getEmptySpaces(), move2
         '''
         print "Move checking:"
         print "=" * 14
@@ -371,7 +374,7 @@ class CompTree(Comp):
             print "\t", griiid, self.aidata[griiid]
         print "-" * 45
         return move
-        #return translateGridReverse(range(0, 9), trans).index(move)
+        #return Translate.GridReverse(range(0, 9), trans).index(move)
 
     def followTree(self, grid, **settings):
         if grid in self.aidata and type(self.aidata[grid]) == type(1):
@@ -404,23 +407,23 @@ class CompTree(Comp):
         printGameGrids(grids)
         print [(grids[i][0] - grids[i-1][0]).index(self.index) if self.index in (grids[i][0] - grids[i-1][0]) else (grids[i][0] - grids[i-1][0]) for i in range(1, len(grids))]
         printGameGrids([(grids[i][0] - grids[i-1][0], 2) for i in range(1, len(grids))]) 
-        maxgrids = [translateGridMax(grid[0]) for grid in grids]
+        maxgrids = [Translate.GridMax(grid[0]) for grid in grids]
         printGameGrids(maxgrids)
         print [(maxgrids[i][0] - maxgrids[i-1][0]).index(self.index) if self.index in (maxgrids[i][0] - maxgrids[i-1][0]) else (maxgrids[i][0] - maxgrids[i-1][0]) for i in range(1, len(maxgrids))]
         print [(maxgrids[i][0] - maxgrids[i-1][0]) for i in range(1, len(maxgrids))]
         printGameGrids([(maxgrids[i][0] - maxgrids[i-1][0], 2) for i in range(1, len(maxgrids))]) 
         grids.reverse()
         while len(grids) > 1:
-            #grid = translateGridMax(grids.pop()[0])[0]
+            #grid = Translate.GridMax(grids.pop()[0])[0]
             grid = (grids.pop()[0])
             if grid in self.aidata:
-                #self.aidata[grid].append(translateGridMax(grids[-1][0])[0])
+                #self.aidata[grid].append(Translate.GridMax(grids[-1][0])[0])
                 self.aidata[grid].append((grids[-1][0]))
             else:
-                #self.aidata[grid] = [translateGridMax(grids[-1][0])[0]]
+                #self.aidata[grid] = [Translate.GridMax(grids[-1][0])[0]]
                 self.aidata[grid] = [(grids[-1][0])]
         assert len(grids) == 1
-        #grid = translateGridMax(grids.pop()[0])[0]
+        #grid = Translate.GridMax(grids.pop()[0])[0]
         grid = grids.pop()[0]
         if grid not in self.aidata:
             self.aidata[grid] = winner
@@ -535,10 +538,10 @@ def printGameGridsValues(gamegrids, aidata):
     '''
     h = []
     for i in gamegrids:
-        f = translateFindMax(i[0])
-        g = translateGrid(i[0], f)
+        f = Translate.FindMax(i[0])
+        g = Translate.Grid(i[0], f)
         #print i , g, f
-        h.append(translateGridReverse(aidata[g], f)
+        h.append(Translate.GridReverse(aidata[g], f)
                  if (g in aidata) else Grid([''] * 9))
     printGrids(h)
 
@@ -642,89 +645,114 @@ def split(a):
 # * * * * * * * * * * * * *
 # * Translation Functions *
 # * * * * * * * * * * * * *
-def translateGetMove(a, b):
-    # Given a (current grid) and b (aidata)
-    # Requires c in b to get move
-    c, d = translateGridMax(a)
-    if c in b:
-        f = translateGridReverse(b[c], d)
-        g = [i for i, j in enumerate(f) if j == max(f)]
-        #g = f.index(max(f))
-    else:
-        g = None
-    return g
 
+class Translate():
+    @staticmethod
+    def GetMove(a, b):
+        '''
+        Given a (current grid) and b (aidata)
+        Requires c in b to get move
+        '''
+        c, d = Translate.GridMax(a)
+        if c in b:
+            f = Translate.GridReverse(b[c], d)
+            g = [i for i, j in enumerate(f) if j == max(f)]
+            #g = f.index(max(f))
+        else:
+            g = None
+        return g
 
-def translateGrid(a, e):
-    # Returns only the selected transition, designated by e.
-    return translateArray(a)[e]
+    @staticmethod
+    def Grid(a, e):
+        '''
+        Returns only the selected transition, designated by e.
+        '''
+        return Translate.Array(a)[e]
 
+    @staticmethod
+    def GridReverse(a, e):
+        '''
+        Returns the Reverse Grid
+        '''
+        return Translate.Grid(a, Translate.ReverseIndex(e))
 
-def translateGridReverse(a, e):
-    #Returns the Reverse Grid
-    return translateGrid(a, translateReverseIndex(e))
+    @staticmethod
+    def ReverseIndex(a):
+        '''
+        Returns the complementary translation
+        '''
+        b = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 7, 6: 6, 7: 5}
+        return b[a]
 
+    @staticmethod
+    def Array(a):
+        '''
+        Finds all of the possible transitions.
+        '''
+        DEBUGFUNC = 0
+        if a == type(""):
+            a = split(a)
+            if DEBUG or DEBUGFUNC:
+                raise TypeError("A is a string")
+        b = Translate.Data()
+        return [Grid([a[f] for f in e]) for e in b]
 
-def translateReverseIndex(a):
-    # Returns the complementary translation
-    b = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 7, 6: 6, 7: 5}
-    return b[a]
+    @staticmethod
+    def Hash(a):
+        '''
+        Return an integer rep. of the grid A.
+        '''
+        b = Translate.FindMax(a)
+        return int(str(Translate.Grid(a, b)))
 
-
-def translateArray(a):
-    # Finds all of the possible transitions.
-    DEBUGFUNC = 0
-    if a == type(""):
-        a = split(a)
+    @staticmethod
+    def FindMax(a):
+        '''
+        Returns the highest valued transition.
+        '''
+        DEBUGFUNC = 0
+        if a == type(""):
+            a = split(a)
+            if DEBUG or DEBUGFUNC:
+                raise TypeError("A is a string")
+        b = Translate.Data()
+        c = [(Grid([int(a[f]) for f in e]), d) for d, e in enumerate(b)]
+        #Remove the above int()
         if DEBUG or DEBUGFUNC:
-            raise TypeError("A is a string")
-    b = translateData()
-    return [Grid([a[f] for f in e]) for e in b]
+            print "find max\n\t c (translation grids): ", c,
+            print "\n\t max: ", max(c), "\n\t a (grid): ", a
+        return max(c)[1]
 
+    @staticmethod
+    def FindIndex(a, b):
+        '''
+        Find the translation index from grid A to grid B.
+        '''
+        c = Translate.Array(a)
+        if isinstance(b, Grid):
+            pass
+        else:
+            e = [f for f in c if hash(f) == b][0]
+        d = c.index(b)
+        return d
 
-def translateHash(a):
-    b = translateFindMax(a)
-    return int(str(translateGrid(a, b)))
+    @staticmethod
+    def GridMax(a):
+        '''
+        Returns the maximum valued grid, and the transition index
+        '''
+        e = Translate.FindMax(a)
+        return (Translate.Grid(a, e), e)
 
-
-def translateFindMax(a):
-    # Returns the highest valued transition.
-    DEBUGFUNC = 0
-    if a == type(""):
-        a = split(a)
-        if DEBUG or DEBUGFUNC:
-            raise TypeError("A is a string")
-    b = translateData()
-    c = [(Grid([int(a[f]) for f in e]), d) for d, e in enumerate(b)]
-    #Remove the above int()
-    if DEBUG or DEBUGFUNC:
-        print "find max\n\t c (translation grids): ", c,
-        print "\n\t max: ", max(c), "\n\t a (grid): ", a
-    return max(c)[1]
-
-
-def translateFindIndex(a, b):
-    c = translateArray(a)
-    if isinstance(b, Grid):
-        pass
-    else:
-        e = [f for f in c if hash(f) == b][0]
-    d = c.index(b)
-    return d
-
-
-def translateGridMax(a):
-    # Returns the maximum valued grid, and the transition index
-    e = translateFindMax(a)
-    return (translateGrid(a, e), e)
-
-
-def translateData():
-    # Returns the transitions used for all
-    return [[0, 1, 2, 3, 4, 5, 6, 7, 8], [2, 1, 0, 5, 4, 3, 8, 7, 6],
-            [6, 7, 8, 3, 4, 5, 0, 1, 2], [8, 5, 2, 7, 4, 1, 6, 3, 0],
-            [0, 3, 6, 1, 4, 7, 2, 5, 8], [6, 3, 0, 7, 4, 1, 8, 5, 2],
-            [8, 7, 6, 5, 4, 3, 2, 1, 0], [2, 5, 8, 1, 4, 7, 0, 3, 6]]
+    @staticmethod
+    def Data():
+        '''
+        Returns the transitions used for all
+        '''
+        return [[0, 1, 2, 3, 4, 5, 6, 7, 8], [2, 1, 0, 5, 4, 3, 8, 7, 6],
+                [6, 7, 8, 3, 4, 5, 0, 1, 2], [8, 5, 2, 7, 4, 1, 6, 3, 0],
+                [0, 3, 6, 1, 4, 7, 2, 5, 8], [6, 3, 0, 7, 4, 1, 8, 5, 2],
+                [8, 7, 6, 5, 4, 3, 2, 1, 0], [2, 5, 8, 1, 4, 7, 0, 3, 6]]
 
 
 # * * * * * * * * * * * * * * * * *
@@ -851,10 +879,10 @@ def adjustAI(winner, gamegrids, index, aidata):
         if DEBUG or DEBUGFUNC:
                 print "grid, move, g, index", grid, move, g, index
                 printXO(grid)
-        maxgrid, translation = translateGridMax(grid)
+        maxgrid, translation = Translate.GridMax(grid)
         if maxgrid in aidata:
             scores = aidata[maxgrid]
-            translatedscores = translateGridReverse(scores, translation)
+            translatedscores = Translate.GridReverse(scores, translation)
         else:
             translatedscores = scores = aidata[maxgrid] = \
                 Grid([0, 0, 0, 0, 0, 0, 0, 0, 0])
@@ -865,7 +893,7 @@ def adjustAI(winner, gamegrids, index, aidata):
             l = 1
 
         translatedscores[move] += k * l
-        adjustedscores = translateGrid(translatedscores, translation)
+        adjustedscores = Translate.Grid(Translate.dscores, translation)
         aidata[maxgrid] = adjustedscores
         if DEBUG or DEBUGFUNC:
             print "*" * 30
