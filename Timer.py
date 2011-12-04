@@ -1,3 +1,12 @@
+'''
+ * * * * * * * * * * * *
+ * Paul Schwendenman   *
+ * 11/22/11            *
+ * If you have to ask: *
+ * You aren't allowed  *
+ * * * * * * * * * * * *
+'''
+
 class Timer():
     '''
     Basic Class for recording run time.
@@ -18,6 +27,9 @@ class Timer():
         return self.time() - self.start
 
     def setItter(self, itter):
+        '''
+        Set the amount of intervals over the time period for a per unit based input.
+        '''
         self.itter = itter
 
     def __del__(self):

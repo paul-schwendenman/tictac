@@ -1,11 +1,18 @@
-
+'''
+ * * * * * * * * * * * *
+ * Paul Schwendenman   *
+ * 09/28/11            *
+ * If you have to ask: *
+ * You aren't allowed  *
+ * * * * * * * * * * * *
+'''
 
 # * * * * * * * * * *
 # * Error Catching  *
 # * * * * * * * * * *
 def handleError():
     '''
-    An in house represention for Error Handling.
+    An in-house display for Error Handling.
     '''
     import sys
     import traceback

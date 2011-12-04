@@ -1,3 +1,12 @@
+'''
+ * * * * * * * * * * * *
+ * Paul Schwendenman   *
+ * 11/14/11            *
+ * If you have to ask: *
+ * You aren't allowed  *
+ * * * * * * * * * * * *
+'''
+
 class ProgressBar:
     '''
     Displays a drop dead simple progressbar
@@ -76,6 +85,11 @@ class ProgressTimer(ProgressBar, Timer):
         self.update2 = ProgressBar.update
 
     def update(self, current):
+        '''
+        Advance the position of the counter.
+        - reprint the display
+        - print ETA
+        '''
         if current != 0:
             time = (self.peek() / current) * (self.max - current)
             if self.max > current:
@@ -86,6 +100,10 @@ class ProgressTimer(ProgressBar, Timer):
 
 
 def eta(time):
+    '''
+    Finds the estamated time remaining
+    - Returns a strind to append to display
+    '''
     if int(time / 60) != 0:
         return str(int(time / 60)) + "m " + \
                str(int(time - int(time / 60) * 60)) + "s  "
@@ -97,6 +115,10 @@ def eta(time):
 
 class ProgressLock(ProgressTimer):
     def update(self, current, lock):
+        '''
+        Advance the position of the counter.
+        - gain and release the lock
+        '''
         lock.acquire()
         ProgressTimer.update(self, current)
         lock.release()
@@ -109,16 +131,25 @@ class ProgressProcess(ProgressTimer):
         ProgressTimer.__init__(self, *args)
 
     def update(self, current):
+        '''
+        Advance the position but in a new process.
+        '''
         self.process = self.Process(target=ProgressTimer.update, \
                                     args=[self, current])
         self.process.start()
 
     def success(self):
+        '''
+        Join all remaining processes
+        '''
         self.process.join()
         ProgressTimer.success(self)
 
 
 def demo():
+    '''
+    Runs a basic demo of each progressbar and the timers
+    '''
     from Timer import Timer
     from time import sleep
 
