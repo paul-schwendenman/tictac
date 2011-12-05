@@ -7,6 +7,7 @@
  * * * * * * * * * * * *
 '''
 
+
 class Timer():
     '''
     Basic Class for recording run time.
@@ -28,7 +29,8 @@ class Timer():
 
     def setItter(self, itter):
         '''
-        Set the amount of intervals over the time period for a per unit based input.
+        Set the amount of intervals over the time
+        period for a per unit based input.
         '''
         self.itter = itter
 

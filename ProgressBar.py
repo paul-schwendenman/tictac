@@ -7,6 +7,7 @@
  * * * * * * * * * * * *
 '''
 
+
 class ProgressBar:
     '''
     Displays a drop dead simple progressbar

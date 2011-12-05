@@ -63,7 +63,8 @@ class Grid(UserList):
 
     def __sub__(self, other):
         assert len(self.data) == len(self.data)
-        return Grid([self.data[index] - other[index] for index in range(0, len(self.data))])
+        return Grid([self.data[index] - other[index] for \
+               index in range(0, len(self.data))])
 
     def fromString(self, a):
         self.data = [int(b) for b in a.split(':')]
@@ -236,9 +237,9 @@ class CompTwo(Comp):
     should block moves.
     '''
     def getMove(self, grid, c):
-        one = ([item[1] for item in filter(filterLinesOne, \
+        one = ([item[1] for item in filter(lambda a: a[0] == 1, \
                 mapGrid(pickPlay, grid))])
-        two = ([item[1] for item in filter(filterLinesTwo, \
+        two = ([item[1] for item in filter(lambda a: a[0] == 2, \
                 mapGrid(pickPlay, grid))])
         grid = grid.getEmptySpaces()
         if self.index == 2:
@@ -364,7 +365,8 @@ class CompTree(Comp):
         move2 = Translate.GridReverse(range(0, 9), trans)[move]
         print trans
         print gridmax, Grid(range(0, 9)), gridmax.getEmptySpaces(), move
-        print grid, Translate.GridReverse(range(0, 9), trans), grid.getEmptySpaces(), move2
+        print grid, Translate.GridReverse(range(0, 9), trans), \
+              grid.getEmptySpaces(), move2
         '''
         print "Move checking:"
         print "=" * 14
@@ -378,7 +380,7 @@ class CompTree(Comp):
 
     def followTree(self, grid, **settings):
         if grid in self.aidata and type(self.aidata[grid]) == type(1):
-            return (None, self.aidata[grid]) 
+            return (None, self.aidata[grid])
         elif len(self.aidata[grid]) > 1:
             results = []
             for each in self.aidata[grid]:
@@ -397,21 +399,32 @@ class CompTree(Comp):
             if 'tabs' not in settings:
                 settings['tabs'] = 0
             print '\t' * settings['tabs'], "Catch Error"
-            print '\t' * settings['tabs'], self.aidata[grid][0], grid, (self.aidata[grid][0] - grid), (self.index),
-            print self.followTree(self.aidata[grid][0], tabs=(settings['tabs'] + 1))
+            print '\t' * settings['tabs'], self.aidata[grid][0], grid, \
+                  (self.aidata[grid][0] - grid), (self.index),
+            print self.followTree(self.aidata[grid][0], \
+                                  tabs=(settings['tabs'] + 1))
             return ((self.aidata[grid][0] - grid).index(self.index), \
                      self.followTree(self.aidata[grid][0]),)
 
     def handleGameOver(self, winner, grids):
         grids = grids[self.index - 1:: 2]
         printGameGrids(grids)
-        print [(grids[i][0] - grids[i-1][0]).index(self.index) if self.index in (grids[i][0] - grids[i-1][0]) else (grids[i][0] - grids[i-1][0]) for i in range(1, len(grids))]
-        printGameGrids([(grids[i][0] - grids[i-1][0], 2) for i in range(1, len(grids))]) 
+        print [(grids[i][0] - grids[i - 1][0]).index(self.index) \
+              if self.index in (grids[i][0] - grids[i - 1][0]) \
+              else (grids[i][0] - grids[i - 1][0]) \
+              for i in range(1, len(grids))]
+        printGameGrids([(grids[i][0] - grids[i - 1][0], 2) \
+                       for i in range(1, len(grids))])
         maxgrids = [Translate.GridMax(grid[0]) for grid in grids]
         printGameGrids(maxgrids)
-        print [(maxgrids[i][0] - maxgrids[i-1][0]).index(self.index) if self.index in (maxgrids[i][0] - maxgrids[i-1][0]) else (maxgrids[i][0] - maxgrids[i-1][0]) for i in range(1, len(maxgrids))]
-        print [(maxgrids[i][0] - maxgrids[i-1][0]) for i in range(1, len(maxgrids))]
-        printGameGrids([(maxgrids[i][0] - maxgrids[i-1][0], 2) for i in range(1, len(maxgrids))]) 
+        print [(maxgrids[i][0] - maxgrids[i - 1][0]).index(self.index) \
+              if self.index in (maxgrids[i][0] - maxgrids[i - 1][0]) \
+              else (maxgrids[i][0] - maxgrids[i - 1][0]) \
+              for i in range(1, len(maxgrids))]
+        print [(maxgrids[i][0] - maxgrids[i - 1][0]) \
+              for i in range(1, len(maxgrids))]
+        printGameGrids([(maxgrids[i][0] - maxgrids[i - 1][0], 2) \
+                        for i in range(1, len(maxgrids))])
         grids.reverse()
         while len(grids) > 1:
             #grid = Translate.GridMax(grids.pop()[0])[0]
@@ -765,27 +778,6 @@ def mapGrid(f, grid):
     return [f(line, grid) for line in lines]
 
 
-def filterLinesNone(a):
-    '''
-    Returns false if None
-    '''
-    return a != None
-
-
-def filterLinesOne(a):
-    '''
-    Returns true if one.
-    '''
-    return a[0] == 1
-
-
-def filterLinesTwo(a):
-    '''
-    Returns true if two.
-    '''
-    return a[0] == 2
-
-
 def pickGameOver(sample, grid):
     '''
     Picks the in a given sample. Ex: row.
@@ -810,7 +802,7 @@ def pickPlay(sample, grid):
 
 
 def gameOver(grid):
-    values = filter(filterLinesNone, mapGrid(pickGameOver, grid))
+    values = filter(lambda a: a != None, mapGrid(pickGameOver, grid))
     if len(values) == 0:
         values = [0]
         if  sum(grid) >= 13:  # Get empty spaces
