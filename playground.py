@@ -102,6 +102,7 @@ print "Wins", len(aa), "Losses", len(bb), "Ties", len(cc), "Rest", len(dd)
 print "\t",
 del timer
 '''
+'''
 from tictac import printGrids, printNine
 a = range(0, 9)
 b = Translate.Array(a)
@@ -111,7 +112,41 @@ for d in range(0, 8):
     printGrids([a, Translate.GridReverse(b[d], d), Grid(), b[d], c[d]])
     printGrids(b)
     printGrids(c)
+'''
+from tictac import printGameGrids, printGrids
 
+def aa(one, two):
+    array = [a - one for a in Translate.Array(two)]
+    valid = filter(lambda a: (array[a].count(0) == 7) and (array[a].count(1) == 1) \
+           and (array[a].count(2) == 1), range(0, len(array)))
+#    printGameGrids([(item,) for item in Translate.Array(two)])
+#    printGrids([(item) for item in array])
+#    print valid
+#    return [Translate.Array(two)[vaild] for vaild in valid]
+    return [(Translate.Array(two)[a], a) for a in valid]
+    
+
+z = Grid()
+a = Grid([0, 0, 1, 0, 0, 0, 0, 0, 0])
+b = Grid([1, 0, 1, 0, 0, 0, 0, 0, 2])
+c, t = Translate.GridMax(a)
+d = Translate.GridMax(b)[0]
+v = aa(c, d)
+e = v[0][0]
+f = Translate.GridReverse(e - c, t)
+g = (Translate.Grid(b, t),)
+
+printGameGrids([(a,), (b,), (b,), (z - z,), (b - a,)])
+printGameGrids([(c,), (d,), (e,), (e - c,), (f,),])
+printGameGrids([(c,), (z,), (g),])
+printGameGrids(v)
+print '*' * 43
+
+q = {}
+q[hash(c)] = d
+print q, hash(a), hash(c) 
+print q[hash(a)]
+print v
 
 # * * * * * *
 # * Console *

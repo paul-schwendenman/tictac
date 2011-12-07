@@ -340,37 +340,42 @@ class CompLearning(Comp):
 
 class CompTree(Comp):
     def getMove(self, grid, error):
+        DEBUGFUNC = 1
         if error != None:
             print "Error:", error, grid
         assert error == None
         #gridmax, trans = Translate.GridMax(grid)
         gridmax = grid
         if gridmax in self.aidata:
-            print "Tree"
-            print "=" * 4
+            if DEBUGFUNC:
+                print "Tree"
+                print "=" * 4
             move = self.followTree(gridmax)
-            print "Moves:", move
+            if DEBUGFUNC:
+                print "Moves:", move
             move = move[0]
         else:
-            print "Pick"
+            if DEBUGFUNC:
+                print "Pick"
             move = gridmax.getEmptySpaces()[0]
             #move = pickOne(gridmax.getEmptySpaces())
-            print "Move:", move
-
+            if DEBUGFUNC:
+                print "Move:", move
         #if move not in grid.getEmptySpaces():
-        print "Translation Checking:"
-        print "=" * 21
-        print "\tDisabled"
-        '''
-        move2 = Translate.GridReverse(range(0, 9), trans)[move]
-        print trans
-        print gridmax, Grid(range(0, 9)), gridmax.getEmptySpaces(), move
-        print grid, Translate.GridReverse(range(0, 9), trans), \
-              grid.getEmptySpaces(), move2
-        '''
-        print "Move checking:"
-        print "=" * 14
-        print gridmax
+        if DEBUGFUNC:
+            print "Translation Checking:"
+            print "=" * 21
+            print "\tDisabled"
+            '''
+            move2 = Translate.GridReverse(range(0, 9), trans)[move]
+            print trans
+            print gridmax, Grid(range(0, 9)), gridmax.getEmptySpaces(), move
+            print grid, Translate.GridReverse(range(0, 9), trans), \
+                  grid.getEmptySpaces(), move2
+            '''
+            print "Move checking:"
+            print "=" * 14
+            print gridmax
         griiids = sorted(self.aidata.keys())
         for griiid in griiids:
             print "\t", griiid, self.aidata[griiid]
@@ -400,31 +405,41 @@ class CompTree(Comp):
                 settings['tabs'] = 0
             print '\t' * settings['tabs'], "Catch Error"
             print '\t' * settings['tabs'], self.aidata[grid][0], grid, \
-                  (self.aidata[grid][0] - grid), (self.index),
+                  (self.aidata[grid][0] - grid), (self.index)
             print self.followTree(self.aidata[grid][0], \
                                   tabs=(settings['tabs'] + 1))
             return ((self.aidata[grid][0] - grid).index(self.index), \
                      self.followTree(self.aidata[grid][0]),)
 
     def handleGameOver(self, winner, grids):
+        DEBUGFUNC = 1
         grids = grids[self.index - 1:: 2]
-        printGameGrids(grids)
-        print [(grids[i][0] - grids[i - 1][0]).index(self.index) \
-              if self.index in (grids[i][0] - grids[i - 1][0]) \
-              else (grids[i][0] - grids[i - 1][0]) \
-              for i in range(1, len(grids))]
-        printGameGrids([(grids[i][0] - grids[i - 1][0], 2) \
-                       for i in range(1, len(grids))])
+        if DEBUGFUNC:
+            print "\nHandle Game Over"
+            print "-" * 16
+            printGameGrids(grids)
+            print [(grids[i][0] - grids[i - 1][0]).index(self.index) \
+                  if self.index in (grids[i][0] - grids[i - 1][0]) \
+                  else (grids[i][0] - grids[i - 1][0]) \
+                  for i in range(1, len(grids))]
+            printGameGrids([(grids[i][0] - grids[i - 1][0], 2) \
+                           for i in range(1, len(grids))])
         maxgrids = [Translate.GridMax(grid[0]) for grid in grids]
-        printGameGrids(maxgrids)
-        print [(maxgrids[i][0] - maxgrids[i - 1][0]).index(self.index) \
-              if self.index in (maxgrids[i][0] - maxgrids[i - 1][0]) \
-              else (maxgrids[i][0] - maxgrids[i - 1][0]) \
-              for i in range(1, len(maxgrids))]
-        print [(maxgrids[i][0] - maxgrids[i - 1][0]) \
-              for i in range(1, len(maxgrids))]
-        printGameGrids([(maxgrids[i][0] - maxgrids[i - 1][0], 2) \
-                        for i in range(1, len(maxgrids))])
+        if DEBUGFUNC:
+            printGameGrids(maxgrids)
+            print [(maxgrids[i][0] - maxgrids[i - 1][0]).index(self.index) \
+                  if self.index in (maxgrids[i][0] - maxgrids[i - 1][0]) \
+                  else (maxgrids[i][0] - maxgrids[i - 1][0]) \
+                  for i in range(1, len(maxgrids))]
+            print [(maxgrids[i][0] - maxgrids[i - 1][0]) \
+                  for i in range(1, len(maxgrids))]
+            try:
+                printGameGrids([(maxgrids[i][0] - maxgrids[i - 1][0], 2) \
+                                for i in range(1, len(maxgrids))])
+            except:
+                printGrids([maxgrids[i][0] - maxgrids[i - 1][0] \
+                                for i in range(1, len(maxgrids))])
+
         grids.reverse()
         while len(grids) > 1:
             #grid = Translate.GridMax(grids.pop()[0])[0]
