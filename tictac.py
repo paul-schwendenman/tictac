@@ -41,6 +41,9 @@ class Grid(UserList):
                 self.data[:] = initlist
             elif isinstance(initlist, UserList):
                 self.data[:] = initlist.data[:]
+            elif isinstance(initlist, int):
+                self.data = [int(item) for item in ('0' * 9 + str(initlist)) \
+                            [-9:]]
             else:
                 self.data = list(initlist)
         else:
@@ -693,7 +696,8 @@ class Translate():
         '''
         Returns only the selected transition, designated by e.
         '''
-        assert Translate.Array(a)[e] ==  Grid([a[f] for f in Translate.Data()[e]])
+        assert Translate.Array(a)[e] == Grid([a[f] \
+            for f in Translate.Data()[e]])
         return Grid([a[f] for f in Translate.Data()[e]])
 
     @staticmethod
@@ -736,10 +740,9 @@ class Translate():
         Returns the highest valued transition.
         '''
         assert a != type("")
-        b = Translate.Data()
-        c = [(Grid([int(a[f]) for f in e]), d) for d, e in enumerate(b)]
+        return max([(Grid([int(a[f]) for f in e]), d) \
+                    for d, e in enumerate(Translate.Data())])[1]
         #Remove the above int()
-        return max(c)[1]
 
     @staticmethod
     def FindIndex(a, b):
@@ -758,15 +761,15 @@ class Translate():
 
     @staticmethod
     def GuessDifference(one, two):
+        '''
+        Returns possible 'correct' forms of two from the
+        perspective of one.
+        '''
         array = [a - one for a in Translate.Array(two)]
-        valid = filter(lambda a: (array[a].count(0) == 7) and (array[a].count(1) == 1) \
-               and (array[a].count(2) == 1), range(0, len(array)))
-    #    printGameGrids([(item,) for item in Translate.Array(two)])
-    #    printGrids([(item) for item in array])
-    #    print valid
-    #    return [Translate.Array(two)[vaild] for vaild in valid]
+        valid = filter(lambda a: (array[a].count(0) == 7) and \
+            (array[a].count(1) == 1) and (array[a].count(2) == 1), \
+            range(0, len(array)))
         return [(Translate.Array(two)[a], a) for a in valid]
-
 
     @staticmethod
     def Data():
