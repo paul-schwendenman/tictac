@@ -115,31 +115,31 @@ for d in range(0, 8):
 '''
 from tictac import printGameGrids, printGrids
 
-def aa(one, two):
-    array = [a - one for a in Translate.Array(two)]
-    valid = filter(lambda a: (array[a].count(0) == 7) and (array[a].count(1) == 1) \
-           and (array[a].count(2) == 1), range(0, len(array)))
-#    printGameGrids([(item,) for item in Translate.Array(two)])
-#    printGrids([(item) for item in array])
-#    print valid
-#    return [Translate.Array(two)[vaild] for vaild in valid]
-    return [(Translate.Array(two)[a], a) for a in valid]
     
 
 z = Grid()
-a = Grid([0, 0, 1, 0, 0, 0, 0, 0, 0])
-b = Grid([1, 0, 1, 0, 0, 0, 0, 0, 2])
+a = Grid([0, 0, 1, 0, 0, 2, 1, 0, 0])
+b = Grid([1, 0, 1, 0, 0, 2, 1, 0, 2])
 c, t = Translate.GridMax(a)
 d = Translate.GridMax(b)[0]
-v = aa(c, d)
+v = Translate.GuessDifference(c, d)
 e = v[0][0]
 f = Translate.GridReverse(e - c, t)
-g = (Translate.Grid(b, t),)
+g = Translate.Grid(b, t)
+h = Translate.GridReverse(g - c, t)
 
-printGameGrids([(a,), (b,), (b,), (z - z,), (b - a,)])
-printGameGrids([(c,), (d,), (e,), (e - c,), (f,),])
-printGameGrids([(c,), (z,), (g),])
+print "The actual game:"
+printGameGrids([(a,), (b,), (b,), (z - z,), (b - a,)],  "Move: " + str((b - a).index(1)))
+print "The correct guess:"
+printGameGrids([(c,), (z,), (g,), (g - c,), (h,),],  "Move: " + str((h).index(1)))
+print "and their solutions:"
+for w in v:
+    e = w[0]
+    f = Translate.GridReverse(e - c, t)
+    printGameGrids([(c,), (d,), (e,), (e - c,), (f,),], "Move: " + str((f).index(1)))
+print "All possible guesses"
 printGameGrids(v)
+    
 print '*' * 43
 
 q = {}

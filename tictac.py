@@ -422,7 +422,7 @@ class CompTree(Comp):
                   if self.index in (grids[i][0] - grids[i - 1][0]) \
                   else (grids[i][0] - grids[i - 1][0]) \
                   for i in range(1, len(grids))]
-            printGameGrids([(grids[i][0] - grids[i - 1][0], 2) \
+            printGameGrids([(grids[i][0] - grids[i - 1][0],) \
                            for i in range(1, len(grids))])
         maxgrids = [Translate.GridMax(grid[0]) for grid in grids]
         if DEBUGFUNC:
@@ -434,7 +434,7 @@ class CompTree(Comp):
             print [(maxgrids[i][0] - maxgrids[i - 1][0]) \
                   for i in range(1, len(maxgrids))]
             try:
-                printGameGrids([(maxgrids[i][0] - maxgrids[i - 1][0], 2) \
+                printGameGrids([(maxgrids[i][0] - maxgrids[i - 1][0],) \
                                 for i in range(1, len(maxgrids))])
             except:
                 printGrids([maxgrids[i][0] - maxgrids[i - 1][0] \
@@ -540,23 +540,21 @@ def printEighteen(a, b):
     print
 
 
-def printGameGrids(a, e=None):
+def printGameGrids(a, one='', two='', three=''):
     '''
     Prints a resonable representation of the value of
     GameGrids and thus the history of the game so far.
     '''
     b = [d[0].returnXO() for d in a]
-    if e != None:
-        b.append(e.returnXO())
     for c in b:
         print c[0], c[1], c[2], "|",
-    print
+    print one
     for c in b:
         print c[3], c[4], c[5], "|",
-    print
+    print two
     for c in b:
         print c[6], c[7], c[8], "|",
-    print
+    print three
     print
 
 
@@ -695,7 +693,8 @@ class Translate():
         '''
         Returns only the selected transition, designated by e.
         '''
-        return Translate.Array(a)[e]
+        assert Translate.Array(a)[e] ==  Grid([a[f] for f in Translate.Data()[e]])
+        return Grid([a[f] for f in Translate.Data()[e]])
 
     @staticmethod
     def GridReverse(a, e):
@@ -708,6 +707,7 @@ class Translate():
     def ReverseIndex(a):
         '''
         Returns the complementary translation
+        Because clockwise turns need reversed with counter-clockwise turns.
         '''
         b = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 7, 6: 6, 7: 5}
         return b[a]
@@ -717,38 +717,28 @@ class Translate():
         '''
         Finds all of the possible transitions.
         '''
-        DEBUGFUNC = 0
-        if a == type(""):
-            a = split(a)
-            if DEBUG or DEBUGFUNC:
-                raise TypeError("A is a string")
-        b = Translate.Data()
-        return [Grid([a[f] for f in e]) for e in b]
+#        if a == type(""):
+#            a = split(a)
+#            if DEBUG or DEBUGFUNC:
+#                raise TypeError("A is a string")
+        return [Grid([a[f] for f in e]) for e in Translate.Data()]
 
     @staticmethod
     def Hash(a):
         '''
         Return an integer rep. of the grid A.
         '''
-        b = Translate.FindMax(a)
-        return int(str(Translate.Grid(a, b)))
+        return int(str(Translate.Grid(a, Translate.FindMax(a))))
 
     @staticmethod
     def FindMax(a):
         '''
         Returns the highest valued transition.
         '''
-        DEBUGFUNC = 0
-        if a == type(""):
-            a = split(a)
-            if DEBUG or DEBUGFUNC:
-                raise TypeError("A is a string")
+        assert a != type("")
         b = Translate.Data()
         c = [(Grid([int(a[f]) for f in e]), d) for d, e in enumerate(b)]
         #Remove the above int()
-        if DEBUG or DEBUGFUNC:
-            print "find max\n\t c (translation grids): ", c,
-            print "\n\t max: ", max(c), "\n\t a (grid): ", a
         return max(c)[1]
 
     @staticmethod
@@ -756,13 +746,7 @@ class Translate():
         '''
         Find the translation index from grid A to grid B.
         '''
-        c = Translate.Array(a)
-        if isinstance(b, Grid):
-            pass
-        else:
-            e = [f for f in c if hash(f) == b][0]
-        d = c.index(b)
-        return d
+        return Translate.Array(a).index(b)
 
     @staticmethod
     def GridMax(a):
@@ -771,6 +755,18 @@ class Translate():
         '''
         e = Translate.FindMax(a)
         return (Translate.Grid(a, e), e)
+
+    @staticmethod
+    def GuessDifference(one, two):
+        array = [a - one for a in Translate.Array(two)]
+        valid = filter(lambda a: (array[a].count(0) == 7) and (array[a].count(1) == 1) \
+               and (array[a].count(2) == 1), range(0, len(array)))
+    #    printGameGrids([(item,) for item in Translate.Array(two)])
+    #    printGrids([(item) for item in array])
+    #    print valid
+    #    return [Translate.Array(two)[vaild] for vaild in valid]
+        return [(Translate.Array(two)[a], a) for a in valid]
+
 
     @staticmethod
     def Data():
