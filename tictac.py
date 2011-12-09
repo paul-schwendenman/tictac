@@ -52,10 +52,16 @@ class Grid(UserList):
             raise TypeError
 
     def __str__(self):
+        '''
+        Prints the list as a continuous word.
+        '''
         a = ''.join([str(a) for a in self.data])
         return a
 
     def toString(self):
+        '''
+        Prints the list joined with ":"
+        '''
         def pick(a, b):
             if a > b:
                 return b
@@ -65,18 +71,30 @@ class Grid(UserList):
                for a in self.data])
 
     def __sub__(self, other):
+        '''
+        Used to find the differences between two grids item by item
+        '''
         assert len(self.data) == len(self.data)
         return Grid([self.data[index] - other[index] for \
                index in range(0, len(self.data))])
 
     def fromString(self, a):
+        '''
+        Inverse of toString()
+        '''
         self.data = [int(b) for b in a.split(':')]
 
     def returnXO(self):
+        '''
+        Returns a list with the 0, 1, and 2s replaced.
+        '''
         b = {0: " ", 1: "X", 2: "O"}
         return [b[a] for a in self.data]
 
     def getEmptySpaces(self):
+        '''
+        Return the index of all positions with value '0'
+        '''
         return [a for a, b in enumerate(self.data) if b == 0]
 
     def getUsedSpaces(self):
@@ -86,7 +104,9 @@ class Grid(UserList):
         return [a for a, b in enumerate(self.data) if b != 0]
 
     def __hash__(self):
-        # Okay to hash despite being mutable, hash reveals state not variable
+        '''
+        Okay to hash despite being mutable, hash reveals state not variable
+        '''
         #return int(self.__str__())
         return Translate.Hash(self)
 
@@ -134,6 +154,9 @@ class Human(Player):
     Player designed for human input.
     '''
     def getMove(self, grid, error):
+        '''
+        Get the move.
+        '''
         try:
             printXO(grid)
             if error != None:
@@ -148,6 +171,9 @@ class Human(Player):
             raise UserError("User Quit")
 
     def handleGameOver(self, winner, gamegrids):
+        '''
+        Finalize the game.
+        '''
         printXO(gamegrids[-1][0])
         assert winner in [-1, 1, 2]
         if winner == -1:
@@ -163,6 +189,9 @@ class HumanNumber(Human):
     Use the numberpad.
     '''
     def getMove(self, *args):
+        '''
+        Returns the user move from number pad.
+        '''
         a = {7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: \
             8}[Human.getMove(self, *args) + 1] - 1
         print "Move:", a
@@ -187,15 +216,28 @@ class Comp(Player):
             self.aidata = {}
 
     def setAIdata(self, aidata):
+        '''
+        Set the memory of the ai
+        '''
         self.aidata = aidata
 
     def getMove(self, *args):
+        '''
+        Get the move should be over-ridden
+        '''
         pass
 
     def handleGameOver(self, *args):
+        '''
+        Handle any per game finalization.
+        '''
         pass
 
     def loadPickle(self, filename=None):
+        '''
+        Loads the unpickled data into from file
+        into the aidata
+        '''
         from cPickle import load
         try:
             a = open(filename)
@@ -208,9 +250,15 @@ class Comp(Player):
             print "aidata has %i items" % (len(self.aidata))
 
     def load(self):
+        '''
+        Open previously saved data.
+        '''
         self.loadPickle(self.filename)
 
     def dumpPickle(self):
+        '''
+        Dumps the currently saved aidata into a file with pickle.
+        '''
         from cPickle import dump
         b = open(self.filename, "w")
         dump(self.aidata, b)
@@ -218,10 +266,16 @@ class Comp(Player):
         b.close()
 
     def dump(self):
+        '''
+        Save the current data
+        '''
         self.record = 0
         self.dumpPickle()
 
     def __del__(self):
+        '''
+        Save data before deleting
+        '''
         if self.record:
             self.dump()
 
@@ -240,6 +294,9 @@ class CompTwo(Comp):
     should block moves.
     '''
     def getMove(self, grid, c):
+        '''
+        Return the move.
+        '''
         one = ([item[1] for item in filter(lambda a: a[0] == 1, \
                 mapGrid(pickPlay, grid))])
         two = ([item[1] for item in filter(lambda a: a[0] == 2, \
@@ -466,6 +523,10 @@ class CompTree(Comp):
 # * UserError   *
 # * * * * * * * *
 class UserError(Exception):
+    '''
+    When the User quits pass a unique exception to
+    eliminate confusion between other valid exceptions.
+    '''
     pass
 
 
@@ -480,6 +541,9 @@ def printXO(b):
 
 
 def printNine(a):
+    '''
+    Print the list of 9 in 3x3 form.
+    '''
     print "%2i %2i %2i\n%2i %2i %2i\n%2i %2i %2i\n" % (a[0], a[1], a[2], \
           a[3], a[4], a[5], a[6], a[7], a[8])
 
@@ -506,7 +570,9 @@ def printGrid(a):
 
 def printHelp():
     '''
-    Helpful grid
+    Helpful grid for seeing desired output
+    
+    Move to player.
     '''
     print
     if USENUMBERPAD:
@@ -547,6 +613,11 @@ def printGameGrids(a, one='', two='', three=''):
     '''
     Prints a resonable representation of the value of
     GameGrids and thus the history of the game so far.
+    
+    When passed a list of tuples with a list as the first item
+    each with lengths greater than nine prints the first nine
+    of each list in 3x3 form horizontally.
+    
     '''
     b = [d[0].returnXO() for d in a]
     for c in b:
@@ -576,6 +647,11 @@ def printGameGridsValues(gamegrids, aidata):
 
 
 def printGrids(a):
+    '''
+    When passed a list of lists with lengths greater than
+    nine print the first nine of each list in 3x3 form
+    horizontally.
+    '''
     for c in a:
         print "%2s%2s%2s%c" % (c[0], c[1], c[2], "|"),
     print
@@ -652,10 +728,19 @@ def getUsedSpaces(a):
 # * Translation Helpers *
 # * * * * * * * * * * * *
 def join(a):
+    '''
+    When passed a list joins the list with ":"
+    '''
     return ":".join(a)
 
 
 def split(a):
+    '''
+    The reverse of split. Don't know if these
+    are called anymore. 
+    
+    Use to initialize a string into a grid?
+    '''
     DEBUGFUNC = 0
     if type(a) == type(""):
         return [int(b) for b in a.split(":")]
@@ -786,6 +871,10 @@ class Translate():
 # * Sorting and Filter Functions  *
 # * * * * * * * * * * * * * * * * *
 def mapGrid(f, grid):
+    '''
+    Map grid looks at the important lines on a grid and
+    compares them using a passed function 'f'
+    '''
     lines = [(0, 1, 2), (3, 4, 5), (6, 7, 8), \
              (0, 3, 6), (1, 4, 7), (2, 5, 8), \
              (0, 4, 8), (2, 4, 6)]
@@ -816,6 +905,15 @@ def pickPlay(sample, grid):
 
 
 def gameOver(grid):
+    '''
+    Checks to see if the Game is Over.
+    either by tie or win.
+    
+    if None => 0
+    if 1 Win => 1
+    if 2 Win => 2
+    if Tie => -1
+    '''
     values = filter(lambda a: a != None, mapGrid(pickGameOver, grid))
     if len(values) == 0:
         values = [0]
@@ -829,6 +927,11 @@ def gameOver(grid):
 # * Player Movement Functions *
 # * * * * * * * * * * * * * * *
 def swapPlayer(n):
+    '''
+    Return 1 or 2 based on input of 2 or 1.
+    
+    Use a dictionary or subtract from three.
+    '''
     if n == 1:
         return 2
     else:  # n == 2:
