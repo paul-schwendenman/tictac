@@ -44,6 +44,8 @@ class Grid(UserList):
             elif isinstance(initlist, int):
                 self.data = [int(item) for item in ('0' * 9 + str(initlist)) \
                             [-9:]]
+            elif isinstance(initlist, str):
+                self.fromString(initlist)
             else:
                 self.data = list(initlist)
         else:
@@ -252,6 +254,8 @@ class Comp(Player):
     def load(self):
         '''
         Open previously saved data.
+        
+        Overload this function to toggle how data is saved
         '''
         self.loadPickle(self.filename)
 
@@ -268,6 +272,8 @@ class Comp(Player):
     def dump(self):
         '''
         Save the current data
+        
+        Overload this function to toggle how data is saved.
         '''
         self.record = 0
         self.dumpPickle()
@@ -323,6 +329,9 @@ class CompTwo(Comp):
 
 class CompLearning(Comp):
     def getMove(self, grid, error):
+        '''
+        Make Move
+        '''
         # Make getMove handle errors
         DEBUGFUNC = 0
         if grid.count(0) == len(grid):
@@ -360,9 +369,15 @@ class CompLearning(Comp):
         #return getEmptySpaces(a)[0]
 
     def handleGameOver(self, a, b):
+        '''
+        Process move.
+        '''
         adjustAI(a, b[: -1][2 - self.index:: 2], self.index, self.aidata)
 
     def load(self):
+        '''
+        Open saved data.
+        '''
         self.aidata = {}
         try:
             file = open(self.filename)
@@ -388,6 +403,9 @@ class CompLearning(Comp):
         print "aidata has %i items" % (len(self.aidata))
 
     def dump(self):
+        '''
+        Save opened data.
+        '''
         self.record = 0
         file = open(self.filename, "w")
         grids = sorted(self.aidata.keys())
@@ -400,6 +418,9 @@ class CompLearning(Comp):
 
 class CompTree(Comp):
     def getMove(self, grid, error):
+        '''
+        Make Move.
+        '''
         DEBUGFUNC = 1
         if error != None:
             print "Error:", error, grid
@@ -444,6 +465,9 @@ class CompTree(Comp):
         #return Translate.GridReverse(range(0, 9), trans).index(move)
 
     def followTree(self, grid, **settings):
+        '''
+        Process Move.
+        '''
         if grid in self.aidata and type(self.aidata[grid]) == type(1):
             return (None, self.aidata[grid])
         elif len(self.aidata[grid]) > 1:
@@ -472,6 +496,9 @@ class CompTree(Comp):
                      self.followTree(self.aidata[grid][0]),)
 
     def handleGameOver(self, winner, grids):
+        '''
+        Process data.
+        '''
         DEBUGFUNC = 1
         grids = grids[self.index - 1:: 2]
         if DEBUGFUNC:
@@ -742,18 +769,8 @@ def split(a):
     Use to initialize a string into a grid?
     '''
     DEBUGFUNC = 0
-    if type(a) == type(""):
-        return [int(b) for b in a.split(":")]
-    elif type(a) == Grid:
-        if DEBUG or DEBUGFUNC:
-            raise TypeError("Passed Spilt type Grid")
-        return a
-    elif type(a) == type([]):
-        if DEBUG or DEBUGFUNC:
-            raise TypeError("Passed Spilt type []")
-        return a
-    else:
-        raise TypeError("Passed type %s" % type(a))
+    assert isinstance(a, str)
+    return [int(b) for b in a.split(":")]
 
 
 # * * * * * * * * * * * * *
@@ -806,10 +823,6 @@ class Translate():
         '''
         Finds all of the possible transitions.
         '''
-#        if a == type(""):
-#            a = split(a)
-#            if DEBUG or DEBUGFUNC:
-#                raise TypeError("A is a string")
         return [Grid([a[f] for f in e]) for e in Translate.Data()]
 
     @staticmethod
@@ -964,11 +977,18 @@ def pickOne(list):
 # * Player Finalization Handlers  *
 # * * * * * * * * * * * * * * * * *
 def handleGameOver(a, b, index, players):
+    '''
+    Call end game handler for players.
+    '''
     assert (index == 1) or (index == 2)
     players[index].handleGameOver(a, b)
 
 
 def quantifyResult(winner, index):
+    '''
+    Should return the matching value for win, lose and draw for
+    both players based on the winner matching index.
+    '''
     if winner == -1:  # draw
         return AIADJUST[index - 1]['draw']
     elif (winner == index):  # win
@@ -978,6 +998,9 @@ def quantifyResult(winner, index):
 
 
 def adjustAI(winner, gamegrids, index, aidata):
+    '''
+    Function used by Learning Comp to learn.
+    '''
     DEBUGFUNC = 0
     #assert gameOver(gamegrids.pop()[0])[0] != 0
     k = quantifyResult(winner, index)
@@ -1023,6 +1046,9 @@ def adjustAI(winner, gamegrids, index, aidata):
 # * Print Game Functions  *
 # * * * * * * * * * * * * *
 def pushGame(b, a):
+    '''
+    Add a completed game to the stack.
+    '''
     b.reverse()
     b.append(a)
     b.reverse()
@@ -1032,6 +1058,9 @@ def pushGame(b, a):
 
 
 def printGames(games):
+    '''
+    Print the final representation for each game.
+    '''
     for game in games:
         printGameGrids(game)
 
@@ -1040,6 +1069,9 @@ def printGames(games):
 # * Statistical Functions *
 # * * * * * * * * * * * * *
 def pushStats(b, a):
+    '''
+    Add a item to the stack.    
+    '''
     b.reverse()
     b.append(a)
     b.reverse()
@@ -1049,6 +1081,9 @@ def pushStats(b, a):
 
 
 def printStats(a):
+    '''
+    Print the recorded statistical result.
+    '''
     b = a[0]
     c = a[1]
     d = a[2]
@@ -1070,6 +1105,9 @@ def printStats(a):
 
 
 def analyzeStats(a, b):
+    '''
+    Add a piece of information.
+    '''    
     if a == 1:
         b[0] += 1
     elif a == 2:
