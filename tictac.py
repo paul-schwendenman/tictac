@@ -421,7 +421,7 @@ class CompTree(Comp):
         '''
         Make Move.
         '''
-        DEBUGFUNC = 1
+        DEBUGFUNC = 0
         if error != None:
             print "Error:", error, grid
         assert error == None
@@ -476,13 +476,18 @@ class CompTree(Comp):
                 results.append(((each - grid).index(self.index), \
                                  self.followTree(each),))
             moves = [s for s in filter(lambda a: a[1] == self.index, results)]
-            if not moves:
+            if not moves:  # No Wins 
+                print "No wins,",
                 moves = [s for s in filter(lambda a: a[1] == -1, results)]
-                if not moves:
+                if not moves:  # No ties
+                    print "No ties,",
                     moves = [s for s in filter(lambda a: a[1] == 0, results)]
-                    if not moves:
+                    if not moves:  # No non-losses
+                        print "No non-losses,",
                         moves = [s for s in filter(lambda a: a[1] not in \
                                  [-1, 0, self.index], results)]
+                        assert moves == results
+            print
             return pickOne(moves)
         else:
             if 'tabs' not in settings:
