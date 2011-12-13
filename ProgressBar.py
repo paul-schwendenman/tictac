@@ -143,7 +143,10 @@ class ProgressProcess(ProgressTimer):
         '''
         Join all remaining processes
         '''
-        self.process.join()
+        try:
+            self.process.join()
+        except AttributeError:
+            pass
         ProgressTimer.success(self)
 
 
