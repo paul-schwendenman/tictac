@@ -210,7 +210,7 @@ a = Grid([1, 2, 2, 2, 1, 1, 0, 0, 0])
 def finishTree(grid, depth=0):
     tree = {}
     grid = Translate.GridMax(grid)[0]
-    if depth > 2:
+    if depth > 5:
         return {grid: 'Depth'}
     if gameOver(grid) != 0:
         tree[grid] = gameOver(grid)
@@ -222,7 +222,7 @@ def finishTree(grid, depth=0):
 
 
 timer = Timer()
-a = Grid([1, 2, 1, 2, 1, 0, 0, 0, 0])
+#a = Grid([1, 2, 1, 2, 1, 0, 0, 0, 0])
 a = Grid()
 tree = finishTree(a)
 del timer
@@ -240,6 +240,13 @@ for item in sorted(tree.keys()):
         printGameGrids([(item1,) for item1 in [item, Grid()] + tree[item]])
     elif isinstance(tree[item], int) or  isinstance(tree[item], str):
         printGameGrids([(item1,) for item1 in [item, Grid()]], '', tree[item])
+
+print "Length:", len(tree)
+
+from cPickle import dump
+file = open("tree", "w")
+dump(tree, file)
+file.close()
 
 # * * * * * *
 # * Console *
