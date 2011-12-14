@@ -224,7 +224,7 @@ def finishTree(grid, depth=0):
 timer = Timer()
 #a = Grid([1, 2, 1, 2, 1, 0, 0, 0, 0])
 a = Grid()
-tree = finishTree(a)
+#tree = finishTree(a)
 del timer
 
 '''
@@ -233,19 +233,20 @@ grids = filter(lambda a: tree[a] == 'Depth', tree.keys()
 for grid in grids:
     addDict(tree, finishTree(grid))
 '''
+def printTree(tree):
+    for item in sorted(tree.keys()):
+        #print item, tree[item]
+        if isinstance(tree[item], list):
+            printGameGrids([(item1,) for item1 in [item, Grid()] + tree[item]])
+        elif isinstance(tree[item], int) or  isinstance(tree[item], str):
+            printGameGrids([(item1,) for item1 in [item, Grid()]], '', tree[item])
+    print "Length:", len(tree)
 
-for item in sorted(tree.keys()):
-    #print item, tree[item]
-    if isinstance(tree[item], list):
-        printGameGrids([(item1,) for item1 in [item, Grid()] + tree[item]])
-    elif isinstance(tree[item], int) or  isinstance(tree[item], str):
-        printGameGrids([(item1,) for item1 in [item, Grid()]], '', tree[item])
+from cPickle import dump, load
+file = open("tree", "r")
+#dump(tree, file)
+printTree(load(file))
 
-print "Length:", len(tree)
-
-from cPickle import dump
-file = open("tree", "w")
-dump(tree, file)
 file.close()
 
 # * * * * * *
