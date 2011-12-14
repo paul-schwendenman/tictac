@@ -17,7 +17,12 @@ from Timer import Timer, units
 # * * * * * *
 # * Code    *
 # * * * * * *
+
+
 '''
+# * * * * * * * *
+# * Every Grid  *
+# * * * * * * * *
 def func(**args):
     print args
     if 'a' in args and args['a'] == 1:
@@ -113,6 +118,11 @@ for d in range(0, 8):
     printGrids(b)
     printGrids(c)
 '''
+'''
+# * * * * * * * * * * * * *
+# * Demo Guess Difference *
+# * * * * * * * * * * * * *
+
 from tictac import printGameGrids, printGrids
 
 def printSequence(a, b):
@@ -151,12 +161,85 @@ b = Grid([1, 0, 1, 0, 2, 0, 2, 0, 0])
 printSequence(a, b)
 
 print '*' * 43
+'''
 
-q = {}
-q[hash(c)] = d
-print q, hash(a), hash(c)
-print q[hash(a)]
-print v
+from tictac import Grid, gameOver, printGameGrids, Translate
+
+def fillTwo(grid):
+    results = []
+    if gameOver(grid) != 0:
+        return gameOver(grid)
+        #return [grid]
+
+    if grid.count(1) > grid.count(2):
+        return fillOne(grid)
+
+    for x in grid.getEmptySpaces():
+        grid1 = grid[:]
+        grid1[x] = 1
+        if gameOver(grid1) != 0:
+            results.append(grid1)
+            continue
+        results += fillOne(grid1)
+    return results
+
+def fillOne(grid):
+    results = []
+    for o in grid.getEmptySpaces():
+        grid1 = grid[:]
+        grid1[o] = 2
+        results.append(grid1)
+    return results
+    
+
+
+def reduceDuplicates(initlist):
+    return list(set(initlist))
+
+def addDict(self, other):
+    for key in other.keys():
+        if key in self and self[key] != 'Depth':
+            assert self[key] == other[key]
+        else:
+            self[key] = other[key]
+            del other[key]
+
+
+a = Grid([1, 2, 2, 2, 1, 1, 0, 0, 0])
+            
+def finishTree(grid, depth=0):
+    tree = {}
+    grid = Translate.GridMax(grid)[0]
+    if depth > 2:
+        return {grid: 'Depth'}
+    if gameOver(grid) != 0:
+        tree[grid] = gameOver(grid)
+    else:
+        tree[grid] = fillTwo(grid)
+        for item in fillTwo(grid):
+            addDict(tree, finishTree(item, depth + 1))
+    return tree
+
+
+timer = Timer()
+a = Grid([1, 2, 1, 2, 1, 0, 0, 0, 0])
+a = Grid()
+tree = finishTree(a)
+del timer
+
+'''
+# For Multiprocessing
+grids = filter(lambda a: tree[a] == 'Depth', tree.keys()
+for grid in grids:
+    addDict(tree, finishTree(grid))
+'''
+
+for item in sorted(tree.keys()):
+    #print item, tree[item]
+    if isinstance(tree[item], list):
+        printGameGrids([(item1,) for item1 in [item, Grid()] + tree[item]])
+    elif isinstance(tree[item], int) or  isinstance(tree[item], str):
+        printGameGrids([(item1,) for item1 in [item, Grid()]], '', tree[item])
 
 # * * * * * *
 # * Console *
