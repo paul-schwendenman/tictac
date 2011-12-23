@@ -2,7 +2,7 @@
 # * Globals *
 # * * * * * *
 
-console = 0
+console = 1
 
 # * * * * * *
 # * Imports *
@@ -19,7 +19,6 @@ from Timer import Timer, units
 # * * * * * *
 
 
-'''
 # * * * * * * * *
 # * Every Grid  *
 # * * * * * * * *
@@ -106,7 +105,6 @@ dd = filter(getOneType_None, grids)
 print "Wins", len(aa), "Losses", len(bb), "Ties", len(cc), "Rest", len(dd)
 print "\t",
 del timer
-'''
 '''
 from tictac import printGrids, printNine
 a = range(0, 9)
@@ -243,9 +241,27 @@ def printTree(tree):
     print "Length:", len(tree)
 
 from cPickle import dump, load
-file = open("tree", "r")
-#dump(tree, file)
-printTree(load(file))
+file = open("datatree", "r")
+
+tree = load(file)
+
+file.close()
+
+print len(tree)
+
+newtree = {}
+
+for grid in tree:
+    newtree[hash(grid)] = tree[grid]
+
+del tree
+tree = newtree
+
+print len(tree)
+
+file = open("datatree", "w")
+
+dump(tree, file)
 
 file.close()
 

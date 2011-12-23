@@ -168,7 +168,7 @@ class Human(Player):
                 print "Invalid Move: ", error + 1
             input = raw_input("Move? ")[0]
             if input == "h" or input == "H":
-                printHelp()
+                self.printHelp()
                 input = raw_input("Move? ")[0]
             else:
                 return int(input) - 1
@@ -187,6 +187,20 @@ class Human(Player):
             print "You won! computer lost"
         else:
             print "You lost, computer won"
+        
+    @staticmethod
+    def printHelp():
+        '''
+        Helpful grid for seeing desired output
+        
+        Move to player.
+        '''
+        print
+        print " 1 | 2 | 3 "
+        print "---+---+---"
+        print " 4 | 5 | 6 "
+        print "---+---+---"
+        print " 7 | 8 | 9 "
 
 
 class HumanNumber(Human):
@@ -201,6 +215,20 @@ class HumanNumber(Human):
             8}[Human.getMove(self, *args) + 1] - 1
         print "Move:", a
         return a
+
+    @staticmethod
+    def printHelp():
+        '''
+        Helpful grid for seeing desired output
+        
+        Move to player.
+        '''
+        print
+        print " 7 | 8 | 9 "
+        print "---+---+---"
+        print " 4 | 5 | 6 "
+        print "---+---+---"
+        print " 1 | 2 | 3 "
 
 
 class Comp(Player):
@@ -424,13 +452,15 @@ class CompTree(Comp):
         '''
         Make Move.
         '''
-        DEBUGFUNC = 0
+        DEBUGFUNC = 1
         if error != None:
             print "Error:", error, grid
         assert error == None
         gridmax, trans = Translate.GridMax(grid)
         #gridmax = grid
-        if hash(gridmax) in self.aidata:
+        print gridmax, self.hash(gridmax), grid, self.hash(grid)
+        print self.hash(gridmax) in self.aidata, len(self.aidata)
+        if self.hash(gridmax) in self.aidata:
             if DEBUGFUNC:
                 print "Tree"
                 print "=" * 4
@@ -458,29 +488,55 @@ class CompTree(Comp):
             print "Move checking:"
             print "=" * 14
             print gridmax
-        if DEBUGFUNC:
-            griiids = sorted(self.aidata.keys())
+        if DEBUGFUNC and 1:
+            griiids = sorted(self.aidata.keys())[:10]
             for griiid in griiids:
-                print "\t", griiid, self.aidata[griiid]
+                print griiid == gridmax
+                print "\t", griiid, type(griiid)#, self.aidata[griiid][:4]
             print "-" * 45
         return Translate.GridReverse(range(0, 9), trans).index(move)
         #return move
+
+    @staticmethod
+    def hash(grid):
+        '''
+        Hash should return a valid key for aidata.
+        
+        The "perfect tree" is  using grids but
+        the AIdata one uses hash()?
+        '''
+        #return grid
+        return hash(grid)
+
+    @staticmethod
+    def followResult(item, len=0):
+        if isinstance(item, tuple):
+            return CompTree.followResult(item[1], len+1)
+        else:
+            return (len, item)
+
+    @staticmethod
+    def followResultLength(item):
+        if isinstance(item, tuple):
+            return 1 + CompTree.followResultLength(item[1])
+        else:
+            return 0
 
     def followTree(self, grid, **settings):
         '''
         Process Move.
         '''
-        DEBUGFUNC = 0
+        DEBUGFUNC = 1
         # print Translate.GridMax(grid)[0], grid, self.aidata, "\n"
-        if hash(grid) in self.aidata and isinstance(self.aidata[hash(grid)], int):
+        if self.hash(grid) in self.aidata and isinstance(self.aidata[self.hash(grid)], int):
             if len(grid.getEmptySpaces()) == 1:
-                return (grid.getEmptySpaces()[0], self.aidata[hash(grid)])
+                return (grid.getEmptySpaces()[0], self.aidata[self.hash(grid)])
             else:
-                return (None, self.aidata[hash(grid)])
-        elif len(self.aidata[hash(grid)]) > 0:
-            recordedmoves = set([item[0] for item in self.aidata[hash(grid)]])
+                return (None, self.aidata[self.hash(grid)])
+        elif len(self.aidata[self.hash(grid)]) > 0:
+            recordedmoves = set([item[0] for item in self.aidata[self.hash(grid)]])
             results = []
-            for each in self.aidata[hash(grid)]:
+            for each in self.aidata[self.hash(grid)]:
                 maxgrid, trans = Translate.GridMax(grid)
                 if self.index not in (each - maxgrid):
                     print each, grid, maxgrid, each - maxgrid
@@ -490,37 +546,38 @@ class CompTree(Comp):
                 print "Empty:", set(grid.getEmptySpaces()), "Recorded:", recordedmoves, "Results:", results,
             for each in set(grid.getEmptySpaces()) - recordedmoves:
                 results.append((each, 0))
-            moves = [s for s in filter(lambda a: a[1] == self.index, results)]
+            moves = [s for s in filter(lambda a: self.followResult(a[1]) == self.index, results)]
             if not moves:  # No Wins 
                 if DEBUGFUNC:
                     print "No wins,",
-                moves = [s for s in filter(lambda a: a[1] == -1, results)]
+                moves = [s for s in filter(lambda a: self.followResult(a[1]) == -1, results)]
                 if not moves:  # No ties
                     if DEBUGFUNC:
                         print "No ties,",
-                    moves = [s for s in filter(lambda a: a[1] == 0, results)]
+                    moves = [s for s in filter(lambda a: self.followResult(a[1]) == 0, results)]
                     if not moves:  # No non-losses / unknown
                         if DEBUGFUNC:
                             print "No non-losses,",
-                        moves = [s for s in filter(lambda a: a[1] not in \
+                        moves = [s for s in filter(lambda a: self.followResult(a[1]) not in \
                                  [-1, 0, self.index], results)]
                         assert moves == results
             if DEBUGFUNC:
                 print
             return pickOne(moves)
         else:
-            if DEBUGFUNC:
+            raise Exception
+            if DEBUGFUNC and 0:
                 if 'tabs' not in settings:
                     settings['tabs'] = 0
                 print '\t' * settings['tabs'], "Catch Error"
-                print '\t' * settings['tabs'], self.aidata[hash(grid)][0], grid, \
-                      (self.aidata[hash(grid)][0] - grid), (self.index)
+                print '\t' * settings['tabs'], self.aidata[self.hash(grid)][0], grid, \
+                      (self.aidata[self.hash(grid)][0] - grid), (self.index)
                 print '\t' * settings['tabs'], [str(key) + ": " + \
                       str(self.aidata[key]) for key in self.aidata.keys()]
-                print self.followTree(self.aidata[hash(grid)][0], \
+                print self.followTree(self.aidata[self.hash(grid)][0], \
                                       tabs=(settings['tabs'] + 1))
-            return ((self.aidata[hash(grid)][0] - grid).index(self.index), \
-                     self.followTree(self.aidata[hash(grid)][0]),)
+            return ((self.aidata[self.hash(grid)][0] - grid).index(self.index), \
+                     self.followTree(self.aidata[self.hash(grid)][0]),)
 
     def handleGameOver(self, winner, grids):
         '''
@@ -561,13 +618,13 @@ class CompTree(Comp):
             #grid = Translate.GridMax(grids.pop()[0])[0]
             grid = (grids.pop()[0])
             maxgrid = maxgrids.pop()
-            if hash(grid) in self.aidata:
+            if self.hash(grid) in self.aidata:
                 #self.aidata[grid].append(Translate.GridMax(grids[-1][0])[0])
-                self.aidata[hash(grid)].append(Translate.Grid(grids[-1][0], maxgrid[1]))
+                self.aidata[self.hash(grid)].append(Translate.Grid(grids[-1][0], maxgrid[1]))
                 #self.aidata[grid].append((grids[-1][0]))
             else:
                 #self.aidata[grid] = [Translate.GridMax(grids[-1][0])[0]]
-                self.aidata[hash(grid)] = [Translate.Grid(grids[-1][0], maxgrid[1])]
+                self.aidata[self.hash(grid)] = [Translate.Grid(grids[-1][0], maxgrid[1])]
                 #self.aidata[grid] = [(grids[-1][0])]
         assert len(grids) == 1
         #grid = Translate.GridMax(grids.pop()[0])[0]
@@ -576,13 +633,13 @@ class CompTree(Comp):
         grid = grids.pop()[0]
         if DEBUGFUNC:
             print grids, grid        
-        if hash(grid) not in self.aidata:
-            self.aidata[hash(grid)] = winner
+        if self.hash(grid) not in self.aidata:
+            self.aidata[self.hash(grid)] = winner
         else:
-            print self.aidata[hash(grid)], winner, self.aidata[hash(grid)] == winner
-            if self.aidata[hash(grid)] != winner:
+            print self.aidata[self.hash(grid)], winner, self.aidata[self.hash(grid)] == winner
+            if self.aidata[self.hash(grid)] != winner:
                 print grid, locals()
-            assert self.aidata[hash(grid)] == winner
+            assert self.aidata[self.hash(grid)] == winner
 
 
 # * * * * * * * *
@@ -632,27 +689,6 @@ def printGrid(a):
         print " %c | %c | %c " % (a[3], a[4], a[5])
         print "---+---+---"
         print " %c | %c | %c " % (a[6], a[7], a[8])
-
-
-def printHelp():
-    '''
-    Helpful grid for seeing desired output
-    
-    Move to player.
-    '''
-    print
-    if USENUMBERPAD:
-        print " 7 | 8 | 9 "
-        print "---+---+---"
-        print " 4 | 5 | 6 "
-        print "---+---+---"
-        print " 1 | 2 | 3 "
-    else:
-        print " 1 | 2 | 3 "
-        print "---+---+---"
-        print " 4 | 5 | 6 "
-        print "---+---+---"
-        print " 7 | 8 | 9 "
 
 
 def printAIData(a):
@@ -1248,7 +1284,7 @@ def main(players, **settings):
 if __name__ == "__main__":
     #players = [None, CompLearning(1, filename='data', record=1), CompTwo(2)]
     #players = [None, CompTree(1, filename='datatree', record=0), CompTwo(2)]
-    players = [None, CompTree(1, filename='datatree', record=0), Human(2)]
+    players = [None, CompTree(1, filename='datatree', record=1), Human(2)]
     #players = [None, CompTwo(1), Human(2)]
     #players = [None, CompLearning(1, filename='data', record=1), Human(2)]
     # {'record': 1, 'stats': 1, 'lastfifteen': 1, 'timers': 1, \
