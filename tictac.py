@@ -1282,14 +1282,14 @@ def main(players, **settings):
 
 
 if __name__ == "__main__":
-    #players = [None, CompLearning(1, filename='data', record=1), CompTwo(2)]
+    players = [None, CompLearning(1, filename='data', record=1), CompTwo(2)]
     #players = [None, CompTree(1, filename='datatree', record=0), CompTwo(2)]
-    players = [None, CompTree(1, filename='datatree', record=1), Human(2)]
+    #players = [None, CompTree(1, filename='datatree', record=1), Human(2)]
     #players = [None, CompTwo(1), Human(2)]
     #players = [None, CompLearning(1, filename='data', record=1), Human(2)]
     # {'record': 1, 'stats': 1, 'lastfifteen': 1, 'timers': 1, \
     # 'times': 100, 'progressbar': 50, 'gamegrids': 1, 'checkdata': 1}
-    main(players, stats=1, lastfifteen=1)
+    #main(players, stats=1, lastfifteen=1)
     #main(players, times=4, progressbar=60, lastfifteen=1)
-    #main(players, times=50, progressbar=64, timers=1, lastfifteen=1, stats=1)
+    main(players, times=50, progressbar=64, timers=1, lastfifteen=1, stats=1)
     #main([None, CompTwo(1), HumanNumber(2)])

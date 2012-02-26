@@ -6,11 +6,12 @@ Tic Tac Toe
 Paul Schwendenman
 ======================
 
+.. contents:: Contents
 
 Getting Started
 ---------------
 
-Run your own tictactoe game call the main method. Like this::
+Run your own tic-tac-toe game call the main method. Like this::
 
 	import tictac
 	tictac.main(players)
@@ -25,15 +26,18 @@ ignored. The objects in slots 1 and 2 should be players.
 Make Your Own Player
 ====================
 
-players:
-	An object with methods getMove and handleGameOver.
+To make your own player you need to make an object that represents a player.
 
-method getMove:
-	Should select and return a valid move on a tictactoe board. 
+        :players:
+                An object with methods getMove and handleGameOver.
 
-method handleGameOver:
-	This is called once the game is over and can handle any
-	saving of information about the results here.
+The player should have the following methods:
+
+        :getMove: Should select and return a valid move on a
+                tic-tac-toe board.
+
+        :handleGameOver: This is called once the game is over and can
+                handle any saving of information about the results here.
 
 The basic player is modeled by::
 
@@ -112,7 +116,7 @@ Flips
 Vertical
 ++++++++
 
-Fliping over the the vertical axis yields::
+Flipping over the the vertical axis yields::
 
        | * |   
     ---+---+---
@@ -135,7 +139,7 @@ Fliping over the the vertical axis yields::
 Horizontal
 ++++++++++
 
-Fliping over the the horizontal axis yields::
+Flipping over the the horizontal axis yields::
 
        |   |   
     ---+---+---
@@ -158,7 +162,7 @@ Fliping over the the horizontal axis yields::
 First Diagonal
 ++++++++++++++
 
-Fliping over the top left corner to bottom right corner axis yields::
+Flipping over the top left corner to bottom right corner axis yields::
 
      * |   |   
     ---+---+---
@@ -181,7 +185,7 @@ Fliping over the top left corner to bottom right corner axis yields::
 Second Diagonal
 +++++++++++++++
 
-Fliping over the top right corner to bottom left corner axis yields::
+Flipping over the top right corner to bottom left corner axis yields::
 
        |   | * 
     ---+---+---
@@ -239,12 +243,12 @@ Counter-Clockwise 90 degrees
     ---+---+---
        | X |   
 
-Super
-=====
+Combination
+============
 
-This translation can be accomplished both by turning and by flipping. If you flip
-both horizontally and vertically or you ture the grid 180 degrees in either direction
-you will discover the final translation::
+This translation can be accomplished both by turning and by flipping. If you
+flip both horizontally and vertically or you turn the grid 180 degrees in
+either direction you will discover the final translation::
 
        | O |   
     ---+---+---
@@ -258,12 +262,10 @@ you will discover the final translation::
     ---+---+---
        | O |   
 
-Special Note
-============
-
-All of these translations have an inverse. For the flips and the super they are
-their own inverse. However in the case of the turns you will need to use the 
-counter-clockwise turn to reverse the clockwise turn.
+.. note::
+    All of these translations have an inverse. For the flips and the super
+    they are their own inverse.  However in the case of the turns you will
+    need to use the counter-clockwise turn to reverse the clockwise turn.
 
 
 

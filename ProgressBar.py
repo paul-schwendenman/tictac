@@ -161,7 +161,7 @@ def demo():
         for a in range(0, max):
             sleep(.001)
             bar.update(a)
-
+        
     timer2 = Timer()
 
     max = 3000
