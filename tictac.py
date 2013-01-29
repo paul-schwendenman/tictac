@@ -13,12 +13,12 @@
 
 EMPTY = " "
 P1 = "X"
-P2 = "Y"
+P2 = "O"
 
 # * * * * * * * *
 # * Grid Class  *
 # * * * * * * * *
-class Grid(UserList):
+class Grid():
     '''
     The Basic 3 by 3 grid
     '''
@@ -70,9 +70,9 @@ class Grid(UserList):
                  (0,4,8), (2,4,6)]
         
         for p0, p1, p2 in lines:
-            if self.board[p0] == "-": continue
-            if self.board[p0] == self.board[p1] == self.board[p2]:
-                self.winner = self.board[p0]
+            if self.data[p0] == EMPTY: continue
+            if self.data[p0] == self.data[p1] == self.data[p2]:
+                self.winner = self.data[p0]
                 return True
 
         if self.data.count(EMPTY) == 0:
@@ -105,7 +105,7 @@ class Player():
         '''
         pass
 
-    def handleGameOver(self, *args):
+    def finalize(self, *args):
         '''
         The method should handle all end game
         activities for the player.
@@ -126,12 +126,13 @@ class Human(Player):
     '''
     Player designed for human input.
     '''
-    def getMove(self, grid, error):
+    def getMove(self, grid, error=None):
         '''
         Get the move.
         '''
         try:
-            printXO(grid)
+            print "%s's move" % (self.symbol)
+            grid.prettyPrint()
             if error != None:
                 print "Invalid Move: ", error + 1
             input = raw_input("Move? ")[0]
@@ -143,10 +144,11 @@ class Human(Player):
         except (ValueError, IndexError, KeyError, EOFError, KeyboardInterrupt):
             raise UserError("User Quit")
 
-    def handleGameOver(self, grid):
+    def finalize(self, grid):
         '''
         Finalize the game.
         '''
+        grid.prettyPrint()
         winner = grid.winner
         if winner == EMPTY:
             print "You tied!"
@@ -169,15 +171,38 @@ class Human(Player):
         print "---+---+---"
         print " 7 | 8 | 9 "
 
+class UserError(Exception):
+    '''
+    When the User quits pass a unique exception to
+    eliminate confusion between other valid exceptions.
+    '''
+    pass
 
 # * * * * * * * * * *
 # * Computer Class  *
 # * * * * * * * * * *
 
+# * * * * *
+# * Main  *
+# * * * * *
 
-                                                                                                         for line in lines:
-                                                                                                                     p1,p2,p3 = line
-                                                                                                                                 if self.board[p1] == "-": continue
-                                                                                                                                             if self.board[p1] == self.board[p2] == self.board[p3]:
-                                                                                                                                                             self.winner = self.board[p1]
-                                                                                                                                                                             return True
+def main(players):
+    grid = Grid()
+    current = 0
+    error = None
+    
+    while not grid.isDone():
+        move = players[current].getMove(grid, error)
+        if move in grid.getEmptySpaces():
+            grid.setMark(move, players[current].symbol)
+            current = 1 - current
+            error = None
+        else:
+            error = move
+    
+    for player in players:
+        player.finalize(grid)
+
+if __name__ == "__main__":
+    players = [Human(P1), Human(P2)]
+    main(players)
