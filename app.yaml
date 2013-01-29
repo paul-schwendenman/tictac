@@ -1,0 +1,21 @@
+application: tictac
+version: 3
+runtime: python27
+api_version: 1
+threadsafe: no
+
+handlers:
+- url: /favicon\.ico
+  static_files: static/icon.ico
+  upload: static/icon\.ico
+
+- url: /robots.txt
+  static_files: static/robots.txt
+  upload: static/robots.txt
+
+- url: .*
+  script: main.py
+
+libraries:
+- name: webapp2
+  version: "2.5.1"
