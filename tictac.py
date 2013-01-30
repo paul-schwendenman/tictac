@@ -8,6 +8,13 @@
 '''
 
 # * * * * * * * * * * *
+# * Libraries         *
+# * * * * * * * * * * *
+
+from random import randint, random
+
+
+# * * * * * * * * * * *
 # * Global Constants  *
 # * * * * * * * * * * *
 
@@ -34,6 +41,16 @@ class Grid():
         a = ''.join([str(a) for a in self.data])
         return a
 
+    def __getitem__(self, i):
+        return self.data[i]
+    
+#    def __hash__(self):
+#        '''
+#        Okay to hash despite being mutable, hash reveals state not variable
+#        '''
+#        #return int(self.__str__())
+#        #return Translate.Hash(self)
+    
     def getEmptySpaces(self):
         '''
         Return the index of all positions with value '0'
@@ -80,7 +97,32 @@ class Grid():
             return True
 
         return False
-                                                                                                 
+
+    def map(self, f):
+        lines = [(0,1,2), (3,4,5), (6,7,8),
+                 (0,3,6), (1,4,7), (2,5,8),
+                 (0,4,8), (2,4,6)]
+        g = self.data
+        return [f(g[l[0]], g[l[1]], g[l[2]]) for l in lines]        
+
+    def filter(self, f):
+        lines = [(0,1,2), (3,4,5), (6,7,8),
+                 (0,3,6), (1,4,7), (2,5,8),
+                 (0,4,8), (2,4,6)]
+        g = self.data
+        return [l for l in lines if f(g[l[0]], g[l[1]], g[l[2]])]        
+
+    def testDone(self):
+        f = lambda a, b, c: a != EMPTY and a == b == c
+        if True in self.map(f):
+            return True
+        
+        if self.data.count(EMPTY) == 0:
+            self.winner = EMPTY
+            return True
+        return False
+
+
 # * * * * * * * * *
 # * Player Class  *
 # * * * * * * * * *
@@ -182,6 +224,91 @@ class UserError(Exception):
 # * Computer Class  *
 # * * * * * * * * * *
 
+class Comp(Player):
+    def getMove(self, grid, *args):
+        # Win
+        f = lambda *a: a.count(self.symbol) == 2 and a.count(EMPTY) == 1
+        r = grid.filter(f)
+        if len(r) > 0:
+            a, b, c = r[0]
+            if grid[a] == EMPTY:
+                return a
+            elif grid[b] == EMPTY:
+                return b
+            else:
+                assert grid[c] == EMPTY
+                return c
+        # Don't Lose
+        f = lambda *a: a.count(self.symbol) == 0 and a.count(EMPTY) == 1
+        r = grid.filter(f)
+        if len(r) > 0:
+            a, b, c = r[0]
+            if grid[a] == EMPTY:
+                return a
+            elif grid[b] == EMPTY:
+                return b
+            else:
+                assert grid[c] == EMPTY
+                return c
+        # Try win
+        # Block Loss
+        # Finish Line     
+        return pickOne(grid.getEmptySpaces())
+
+    def finalize(self, *args):
+        pass
+
+def pickOne(list):
+    '''
+    Picks one.
+    First: a[0], last: a[-1], random: r(0, len(a) - 1)
+    '''
+    return list[randint(0, len(list) - 1)]
+
+class CompProb(Player):
+    def __init__(self, *args):
+        Player.__init__(self, *args)
+        self.dict = {}
+
+    def getMove(self, grid, error = None):
+        if grid not in self.dict:
+            self.dict[grid] = [1., 1., 1., 1., 1., 1., 1., 1., 1.]
+        lst = self.dict[grid]
+        
+        if error:
+            print error, lst
+            lst[error] = 0
+            print error, lst
+            self.dict[grid] = lst
+            
+        pdfs = [item/sum(lst) for item in lst]
+        
+        num = random()
+        print "n:", num       
+        accum = 0
+        for i, pdf in enumerate(pdfs):
+            accum += pdf
+            print "a:", i, accum
+            if num < (accum):
+                return i
+        print "s:", accum
+        return i
+
+    def finalize(self, grid, *args):
+        print self.dict
+        if grid.winner == self.symbol:
+            move = grid.undo()
+            self.dict[grid][move] += 2
+            
+        elif grid.winner == EMPTY:
+            move = grid.undo()
+            self.dict[grid][move] += 1
+        
+        else:
+            pass 
+        print self.dict
+        
+
 # * * * * *
 # * Main  *
 # * * * * *
@@ -200,9 +327,11 @@ def main(players):
         else:
             error = move
     
+    assert grid.testDone()
+    
     for player in players:
         player.finalize(grid)
 
 if __name__ == "__main__":
-    players = [Human(P1), Human(P2)]
+    players = [Human(P1), CompProb(P2)]
     main(players)
