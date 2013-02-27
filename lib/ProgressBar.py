@@ -75,12 +75,24 @@ class ProgressBar:
         self.success()
 
 
+class ProgressFlush(ProgressBar):
+    def __init__(self, max, topbound=100):
+        import sys
+        self.flush = sys.stdout.flush
+        ProgressBar.__init__(self, max, topbound)
+    def display(self):
+        ProgressBar.display(self)
+        self.flush()
+    
+        
+        
+
 from Timer import Timer, units
 
 
-class ProgressTimer(ProgressBar, Timer):
+class ProgressTimer(ProgressFlush, Timer):
     def __init__(self, max, topbound=100, itter=None):
-        ProgressBar.__init__(self, max, topbound)
+        ProgressFlush.__init__(self, max, topbound)
         Timer.__init__(self)
         #self.peek = Timer.peek
         self.update2 = ProgressBar.update
@@ -168,6 +180,13 @@ def demo():
 
     timer = Timer(max)
     bar = ProgressBar(max, 50)
+    run(bar, max)
+    del bar
+    print
+    del timer
+
+    timer = Timer(max)
+    bar = ProgressFlush(max, 50)
     run(bar, max)
     del bar
     print
