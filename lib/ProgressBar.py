@@ -7,6 +7,8 @@
  * * * * * * * * * * * *
 '''
 
+import sys
+
 
 class ProgressBar:
     '''
@@ -58,6 +60,7 @@ class ProgressBar:
         print self.char + "[" + "*" * self.number + " " * \
               (self.topbound - self.number) + "] %2i%%" % \
               (self.number * 100 / self.topbound) + self.tail,
+        sys.stdout.flush()
 
     def success(self):
         '''
@@ -75,24 +78,12 @@ class ProgressBar:
         self.success()
 
 
-class ProgressFlush(ProgressBar):
-    def __init__(self, max, topbound=100):
-        import sys
-        self.flush = sys.stdout.flush
-        ProgressBar.__init__(self, max, topbound)
-    def display(self):
-        ProgressBar.display(self)
-        self.flush()
-    
-        
-        
-
 from Timer import Timer, units
 
 
-class ProgressTimer(ProgressFlush, Timer):
+class ProgressTimer(ProgressBar, Timer):
     def __init__(self, max, topbound=100, itter=None):
-        ProgressFlush.__init__(self, max, topbound)
+        ProgressBar.__init__(self, max, topbound)
         Timer.__init__(self)
         #self.peek = Timer.peek
         self.update2 = ProgressBar.update
@@ -127,6 +118,9 @@ def eta(time):
 
 
 class ProgressLock(ProgressTimer):
+    '''
+    Deprecated
+    '''
     def update(self, current, lock):
         '''
         Advance the position of the counter.
@@ -138,6 +132,9 @@ class ProgressLock(ProgressTimer):
 
 
 class ProgressProcess(ProgressTimer):
+    '''
+    Deprecated
+    '''
     def __init__(self, *args):
         from multiprocessing import Process
         self.Process = Process
@@ -147,7 +144,7 @@ class ProgressProcess(ProgressTimer):
         '''
         Advance the position but in a new process.
         '''
-        self.process = self.Process(target=ProgressTimer.update, \
+        self.process = self.Process(target=ProgressTimer.update,
                                     args=[self, current])
         self.process.start()
 
@@ -173,20 +170,13 @@ def demo():
         for a in range(0, max):
             sleep(.001)
             bar.update(a)
-        
+
     timer2 = Timer()
 
     max = 3000
 
     timer = Timer(max)
     bar = ProgressBar(max, 50)
-    run(bar, max)
-    del bar
-    print
-    del timer
-
-    timer = Timer(max)
-    bar = ProgressFlush(max, 50)
     run(bar, max)
     del bar
     print
@@ -201,18 +191,18 @@ def demo():
     print
     del timer
 
-    sleep(.125)
+    #sleep(.125)
 
-    timer = Timer(max)
-    bar = ProgressProcess(max, 25)
-    run(bar, max)
-    bar.success()
-    del bar
-    print
-    del timer
-    print
+    #timer = Timer(max)
+    #bar = ProgressProcess(max, 25)
+    #run(bar, max)
+    #bar.success()
+    #del bar
+    #print
+    #del timer
+    #print
 
 
 if __name__ == '__main__':
-    print "Running demo of three progressbars and two timers:"
+    print "Running demo of two progressbars and two timers:"
     demo()
