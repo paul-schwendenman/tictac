@@ -3,7 +3,7 @@ from tictac import *
 print "Test translations"
 
 a = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-b = translateArray(a)
+b = Translate.Array(a)
 
 
 def testTranslateArray():
